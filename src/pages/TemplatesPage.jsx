@@ -89,7 +89,7 @@ export default function TemplatesPage() {
   }, []);
 
   const loadProducts = async () => {
-    // 1. Try reading from LocalStorage first for instant Vercel sync
+    // 1. Try reading from LocalStorage first for instant render
     const localData = localStorage.getItem('cutiepage_products');
     if (localData) {
       try {
@@ -97,14 +97,13 @@ export default function TemplatesPage() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           setProducts(parsed.filter(p => p.active !== false));
         }
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) {}
     }
 
-    // 2. Try fetching from MongoDB API
+    // 2. Fetch from Vercel Serverless API /api/products (connected to MongoDB Atlas)
     try {
-      const res = await fetch('http://localhost:5000/api/products?active=true');
+      let res = await fetch('/api/products?active=true');
+      if (!res.ok) res = await fetch('http://localhost:5000/api/products?active=true');
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -113,7 +112,7 @@ export default function TemplatesPage() {
         }
       }
     } catch (err) {
-      console.log('MongoDB catalog API offline, using local storage products');
+      console.log('MongoDB catalog API offline');
     }
   };
 

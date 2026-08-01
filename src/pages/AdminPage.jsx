@@ -18,7 +18,6 @@ const INITIAL_TEMPLATES = [
 export default function AdminPage() {
   const navigate = useNavigate();
 
-  // Persistent authentication state checking localStorage
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('cutiepage_admin_auth') === 'true';
   });
@@ -88,7 +87,8 @@ export default function AdminPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/orders');
+      let res = await fetch('/api/orders');
+      if (!res.ok) res = await fetch('http://localhost:5000/api/orders');
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) setOrders(data);
@@ -110,7 +110,8 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/products');
+      let res = await fetch('/api/products');
+      if (!res.ok) res = await fetch('http://localhost:5000/api/products');
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -180,15 +181,22 @@ export default function AdminPage() {
     setTemplatesList(updatedList);
     saveProductsToLocalStorage(updatedList);
 
-    showToast('✅ Product Added Successfully!');
+    showToast('✅ Product Added Successfully to MongoDB!');
     setShowAddProductModal(false);
 
     try {
-      await fetch('http://localhost:5000/api/products', {
+      let res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProdPayload)
       });
+      if (!res.ok) {
+        await fetch('http://localhost:5000/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newProdPayload)
+        });
+      }
     } catch (err) {
       console.log('MongoDB server offline, saved to localStorage');
     } finally {
@@ -242,11 +250,18 @@ export default function AdminPage() {
     setEditingProduct(null);
 
     try {
-      await fetch(`http://localhost:5000/api/products/${targetId}`, {
+      let res = await fetch(`/api/products?id=${targetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePayload)
       });
+      if (!res.ok) {
+        await fetch(`http://localhost:5000/api/products/${targetId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatePayload)
+        });
+      }
     } catch (err) {
       console.log('MongoDB offline, updated in localStorage');
     } finally {
@@ -266,7 +281,8 @@ export default function AdminPage() {
       showToast(`✅ Deleted "${targetItemToDelete.item.title}" successfully!`);
 
       try {
-        await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+        let res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+        if (!res.ok) await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
       } catch (err) {
         console.error(err);
       }
@@ -276,7 +292,8 @@ export default function AdminPage() {
       showToast(`✅ Order deleted successfully!`);
 
       try {
-        await fetch(`http://localhost:5000/api/orders/${id}`, { method: 'DELETE' });
+        let res = await fetch(`/api/orders?id=${id}`, { method: 'DELETE' });
+        if (!res.ok) await fetch(`http://localhost:5000/api/orders/${id}`, { method: 'DELETE' });
       } catch (err) {
         console.error(err);
       }
