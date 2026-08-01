@@ -49,6 +49,10 @@ const ProductSchema = new mongoose.Schema({
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
 export default async function handler(req, res) {
+  // Disable all serverless/CDN/edge caching for 100% fresh data on every request
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -79,7 +83,7 @@ export default async function handler(req, res) {
       let query = {};
       if (category && category !== 'all') query.category = category;
       if (featured === 'true') query.featured = true;
-      if (active === 'true') query.active = true;
+      if (active === 'true') query.active = { $ne: false };
       if (search) {
         query.$or = [
           { title: { $regex: search, $options: 'i' } },
@@ -89,6 +93,7 @@ export default async function handler(req, res) {
       }
 
       const products = await Product.find(query).sort({ createdAt: -1 });
+      console.log(`[API /api/products] Returned ${products.length} products from MongoDB. IDs:`, products.map(p => p._id.toString()));
       return res.status(200).json(products);
     }
 
@@ -125,7 +130,7 @@ export default async function handler(req, res) {
       });
 
       await newProduct.save();
-      console.log('✅ Created product in MongoDB Atlas via Vercel Function:', newProduct.title);
+      console.log('✅ Created product in MongoDB Atlas via Vercel Function:', newProduct.title, newProduct._id.toString());
       return res.status(201).json({ success: true, product: newProduct });
     }
 

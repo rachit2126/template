@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Star, Crown, MessageCircle } from 'lucide-react';
+import { fetchApi } from '../utils/api';
 
 const DEFAULT_TEMPLATES = [
   {
@@ -89,23 +90,18 @@ export default function TemplatesPage() {
   }, []);
 
   const loadProducts = async () => {
-    // 1. Fetch directly from Vercel Serverless MongoDB Atlas API FIRST
-    try {
-      let res = await fetch('/api/products?active=true');
-      if (!res.ok) res = await fetch('http://localhost:5000/api/products?active=true');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
-          localStorage.setItem('cutiepage_products', JSON.stringify(data));
-          return;
-        }
-      }
-    } catch (err) {
-      console.log('MongoDB API offline, checking local storage');
+    // 1. Fetch fresh production data from Vercel Serverless MongoDB Atlas API (no-store)
+    const result = await fetchApi('/api/products');
+    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+      console.log(`[TemplatesPage] Fetched ${result.data.length} fresh products from MongoDB API.`);
+      setProducts(result.data);
+      try {
+        localStorage.setItem('cutiepage_products', JSON.stringify(result.data));
+      } catch (e) {}
+      return;
     }
 
-    // 2. LocalStorage Fallback if API fails
+    // 2. LocalStorage Fallback only if API fails
     const localData = localStorage.getItem('cutiepage_products');
     if (localData) {
       try {
