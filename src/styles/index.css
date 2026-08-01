@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&family=Dancing+Script:wght@600;700&display=swap');
+
+:root {
+  --bg-light: #F8F9FE;
+  --bg-surface: rgba(255, 255, 255, 0.85);
+  --bg-surface-elevated: #FFFFFF;
+  --primary-pink: #FF3B7E;
+  --primary-coral: #FF6B4A;
+  --primary-purple: #7C3AED;
+  --accent-gold: #D97706;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --border-glass: rgba(0, 0, 0, 0.08);
+  --border-glass-glow: rgba(255, 59, 126, 0.35);
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-cursive: 'Dancing Script', cursive;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-light);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(255, 59, 126, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 90% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 50% 60%, rgba(255, 107, 74, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 85% 85%, rgba(255, 59, 126, 0.05) 0%, transparent 40%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FF3B7E 0%, #7C3AED 100%);
+  border-radius: 4px;
+}
+
+/* Light Glassmorphism utility classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.04);
+  border-radius: 24px;
+}
+
+.glass-panel-glow {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 59, 126, 0.25);
+  box-shadow: 0 0 30px rgba(255, 59, 126, 0.12), 0 16px 40px rgba(0, 0, 0, 0.06);
+  border-radius: 28px;
+}
+
+.glass-card {
+  background: #FFFFFF;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: #FFFFFF;
+  border-color: rgba(255, 59, 126, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(255, 59, 126, 0.15);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #FF3B7E 0%, #E11D48 50%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-pink {
+  background: linear-gradient(135deg, #FF3B7E 0%, #FF70A6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #FF3B7E 0%, #FF6B4A 100%);
+  color: white;
+  font-weight: 700;
+  border: none;
+  border-radius: 9999px;
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(255, 59, 126, 0.35);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(255, 59, 126, 0.5);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-secondary {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 12px 26px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.65);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes marqueeLeft {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-float {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+/* Phone Mockup Frame */
+.phone-mockup-wrapper {
+  perspective: 1000px;
+}
+
+.phone-mockup-frame {
+  width: 320px;
+  height: 640px;
+  background: #110B22;
+  border-radius: 44px;
+  border: 10px solid #1E1B4B;
+  box-shadow: 
+    0 25px 60px rgba(15, 23, 42, 0.35),
+    0 0 40px rgba(255, 59, 126, 0.25),
+    inset 0 0 15px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s ease;
+}
+
+.phone-mockup-frame:hover {
+  transform: scale(1.02);
+}
+
+.phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 26px;
+  background: #1E1B4B;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.phone-speaker {
+  width: 45px;
+  height: 4px;
+  background: #0F172A;
+  border-radius: 4px;
+}
+
+.phone-camera {
+  width: 8px;
+  height: 8px;
+  background: #000000;
+  border-radius: 50%;
+  margin-left: 10px;
+  border: 1px solid #334155;
+}
+
+/* Floating feature badges - Dark Glass Vibes */
+.floating-badge {
+  background: rgba(26, 15, 48, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 14px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+  position: absolute;
+  z-index: 30;
+  color: #FFFFFF;
+}
+
+.floating-badge:hover {
+  background: rgba(38, 22, 70, 0.95);
+  border-color: var(--primary-pink);
+  transform: scale(1.05);
+  box-shadow: 0 14px 30px rgba(255, 59, 126, 0.4);
+}
+
+/* Occasion Card styling */
+.occasion-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 220px;
+  min-width: 160px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.occasion-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.occasion-card:hover img {
+  transform: scale(1.12);
+}
+
+.occasion-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.2) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.occasion-card:hover {
+  border-color: var(--primary-pink);
+  box-shadow: 0 10px 30px rgba(255, 59, 126, 0.35);
+  transform: translateY(-6px);
+}

@@ -1,0 +1,345 @@
+import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Star, Crown, MessageCircle } from 'lucide-react';
+
+export default function TemplatesPage() {
+  const navigate = useNavigate();
+  const WHATSAPP_NUMBER = '919119055155';
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const categories = [
+    { id: 'all', name: 'All templates', count: 20 },
+    { id: 'anniversary', name: 'Anniversary', count: 4 },
+    { id: 'apology', name: 'Apology', count: 3 },
+    { id: 'birthday', name: 'Birthday', count: 6 },
+    { id: 'family', name: 'Family', count: 3 },
+    { id: 'friendship', name: 'Friendship', count: 4 },
+    { id: 'love', name: 'Love', count: 6 },
+    { id: 'wedding', name: 'Wedding', count: 2 },
+    { id: 'proposal', name: 'Proposal', count: 3 }
+  ];
+
+  const products = [
+    {
+      isBundle: true,
+      slug: 'cutie-pack-bundle',
+      title: 'Cutie Pack',
+      category: 'love',
+      badge: 'BUNDLE',
+      subtitle: 'Get all 17 templates just for ₹999, lifetime access.',
+      price: '₹999',
+      originalPrice: '₹2,583',
+      saveBadge: 'SAVE ₹1,584',
+      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+      description: 'Unlock every premium template. Pay once. Access forever. Includes all future templates released!'
+    },
+    {
+      slug: 'sweet-birthday',
+      title: 'Sweet Birthday',
+      category: 'birthday',
+      rating: 5.0,
+      reviews: 57,
+      price: '₹79',
+      discountBadge: '81% OFF',
+      image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+      description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.'
+    },
+    {
+      slug: 'friendship-day',
+      title: 'Friendship Day',
+      category: 'friendship',
+      rating: 5.0,
+      reviews: 63,
+      price: '₹309',
+      discountBadge: 'FLAT 50% OFF',
+      image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
+      description: '🎈 They tap the link and a hot-air balloon floats up carrying a letter with their name on it. Then your song starts, and the page unfolds...'
+    },
+    {
+      slug: 'romantic-sky-lanterns',
+      title: 'Romantic Sky Lanterns',
+      category: 'love',
+      rating: 4.9,
+      reviews: 420,
+      price: '₹399',
+      discountBadge: 'FLAT 50% OFF',
+      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+      description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.'
+    },
+    {
+      slug: 'netflix-style-memory-lane',
+      title: 'Netflix Style Love Story',
+      category: 'love',
+      rating: 5.0,
+      reviews: 890,
+      price: '₹449',
+      discountBadge: 'BESTSELLER',
+      image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
+      description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.'
+    },
+    {
+      slug: 'golden-anniversary-vows',
+      title: 'Golden Anniversary Vows',
+      category: 'anniversary',
+      rating: 4.9,
+      reviews: 310,
+      price: '₹499',
+      discountBadge: 'LUXURY',
+      image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+      description: '💍 Elegant golden theme, wedding vows audio player, countdown clock, timeline slider & guest wishes book.'
+    },
+    {
+      slug: 'heartfelt-apology-letter',
+      title: 'Heartfelt Apology Letter',
+      category: 'apology',
+      rating: 4.9,
+      reviews: 140,
+      price: '₹299',
+      discountBadge: 'SPECIAL',
+      image: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=800&q=80',
+      description: '💌 Express sincere feelings with soft piano background melody, unsealable handwritten note, and memory gallery.'
+    },
+    {
+      slug: 'family-reunion-wishes',
+      title: 'Family Memories & Wishes',
+      category: 'family',
+      rating: 4.8,
+      reviews: 95,
+      price: '₹349',
+      discountBadge: 'POPULAR',
+      image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
+      description: '👨‍👩‍👧‍👦 Cherish family moments, photo album slides, background acoustic music & custom blessing notes.'
+    }
+  ];
+
+  const handleBuyOnWhatsApp = (templateTitle, price) => {
+    const text = encodeURIComponent(`Hi Cutiepage! I would like to buy the template "${templateTitle}" for ${price}. Please share payment details and customization options! 💖`);
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
+  };
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory || (p.isBundle && selectedCategory === 'all');
+      const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [selectedCategory, searchQuery]);
+
+  return (
+    <div className="min-h-screen text-slate-900 font-['Plus_Jakarta_Sans'] pb-20">
+      
+      {/* Top Announcement Bar */}
+      <div className="bg-gradient-to-r from-purple-700 via-indigo-600 to-pink-600 text-white text-xs sm:text-sm font-semibold py-2.5 px-4 text-center shadow-sm">
+        <span>Cutiepage is now <strong>40,000+ Users strong</strong> with <strong>13,000+ Orders!</strong> 💖</span>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
+        
+        {/* Page Title & Breadcrumbs Header */}
+        <div className="text-left space-y-2 mb-10 border-b border-slate-200 pb-6">
+          <span className="text-xs font-bold text-pink-600 tracking-widest uppercase">TEMPLATES</span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight">
+            Find the right page and make it yours.
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            Showing {filteredProducts.length} of 20 designs
+          </p>
+        </div>
+
+        {/* 2-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Left Sidebar Filter Column */}
+          <aside className="lg:col-span-3 bg-white border border-slate-200 p-6 rounded-3xl space-y-6 text-left shadow-sm sticky top-24">
+            <div>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">FILTER</span>
+              
+              <div className="relative mt-3">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search templates"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-600"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">Category</span>
+              <ul className="space-y-1 text-xs font-medium">
+                {categories.map((c) => {
+                  const isSelected = selectedCategory === c.id;
+
+                  return (
+                    <li key={c.id}>
+                      <button 
+                        onClick={() => setSelectedCategory(c.id)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+                          isSelected 
+                            ? 'bg-purple-600 text-white font-bold shadow-sm' 
+                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span>{c.name}</span>
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                          isSelected ? 'bg-white/20 text-white' : 'text-slate-500 bg-slate-100'
+                        }`}>
+                          {c.count}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </aside>
+
+          {/* Right Cards Grid */}
+          <main className="lg:col-span-9 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {filteredProducts.map((item) => {
+                
+                // FEATURED BUNDLE CARD
+                if (item.isBundle) {
+                  return (
+                    <div 
+                      key={item.slug}
+                      className="md:col-span-2 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border-2 border-purple-500/40 p-6 sm:p-8 rounded-3xl relative overflow-hidden text-left space-y-5 shadow-sm group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="bg-purple-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                          <Crown className="w-3 h-3 text-amber-300" /> BUNDLE
+                        </span>
+                        <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
+                          {item.saveBadge}
+                        </span>
+                      </div>
+
+                      <div className="relative h-60 rounded-2xl overflow-hidden border border-slate-200 shadow-md cursor-pointer" onClick={() => navigate(`/templates/${item.slug}`)}>
+                        <img 
+                          src={item.image} 
+                          alt={item.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex items-end p-4">
+                          <div className="text-white text-xs font-bold">
+                            💖 Every Premium Template Yours Forever • Pay Once • Lifetime Access
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h3 className="text-2xl font-extrabold text-slate-900 font-['Outfit']">{item.title}</h3>
+                        <p className="text-xs sm:text-sm text-slate-600">{item.subtitle}</p>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-black text-slate-900 font-['Outfit']">{item.price}</span>
+                          <span className="text-xs text-slate-500 line-through">{item.originalPrice}</span>
+                          <span className="text-[10px] text-pink-600 font-bold uppercase tracking-wider">ONE-TIME</span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => navigate(`/templates/${item.slug}`)}
+                            className="btn-secondary text-xs py-2.5 px-5 bg-white border-slate-300 text-slate-800 hover:bg-slate-50 font-bold"
+                          >
+                            See details
+                          </button>
+                          <button 
+                            onClick={() => handleBuyOnWhatsApp(item.title, item.price)}
+                            className="btn-primary text-xs py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" /> Buy on WhatsApp
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // REGULAR TEMPLATE CARD
+                return (
+                  <div 
+                    key={item.slug}
+                    className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col justify-between text-left group shadow-sm hover:border-purple-400 hover:shadow-md transition-all"
+                  >
+                    <div className="relative h-56 overflow-hidden bg-slate-100 cursor-pointer" onClick={() => navigate(`/templates/${item.slug}`)}>
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                      />
+                      {item.discountBadge && (
+                        <div className="absolute bottom-3 left-3 bg-purple-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm uppercase tracking-wider">
+                          {item.discountBadge}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <h3 
+                          onClick={() => navigate(`/templates/${item.slug}`)}
+                          className="text-xl font-bold text-slate-900 font-['Outfit'] group-hover:text-purple-600 transition-colors cursor-pointer"
+                        >
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {item.description}
+                        </p>
+
+                        <div className="flex items-center gap-1.5 pt-1">
+                          <div className="flex text-amber-400">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                            ))}
+                          </div>
+                          <span className="text-xs font-bold text-slate-900">{item.rating}</span>
+                          <span className="text-xs text-slate-500">({item.reviews})</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <div className="text-xl font-extrabold text-slate-900 font-['Outfit']">
+                          {item.price}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => navigate(`/templates/${item.slug}`)}
+                            className="btn-secondary text-xs py-2 px-3 bg-white border-slate-300 text-slate-800 hover:bg-slate-50 font-bold"
+                          >
+                            Take a look
+                          </button>
+                          <button 
+                            onClick={() => handleBuyOnWhatsApp(item.title, item.price)}
+                            className="btn-primary text-xs py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" /> Buy Now
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })}
+
+            </div>
+          </main>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
