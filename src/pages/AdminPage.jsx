@@ -26,6 +26,7 @@ export default function AdminPage() {
 
   const [orders, setOrders] = useState([]);
   const [templatesList, setTemplatesList] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Modals state
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
@@ -83,6 +84,13 @@ export default function AdminPage() {
       console.log(`[AdminPage] Loaded ${result.data.length} products from MongoDB API.`);
       setTemplatesList(result.data);
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([fetchOrders(), fetchProducts()]);
+    setIsRefreshing(false);
+    showToast('✅ Refreshed live data from MongoDB Atlas!');
   };
 
   const handleAdminLogin = (e) => {
@@ -387,10 +395,12 @@ export default function AdminPage() {
           </button>
 
           <button 
-            onClick={() => { fetchOrders(); fetchProducts(); }}
-            className="btn-secondary text-xs py-2 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 flex items-center gap-1 font-bold cursor-pointer"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="btn-secondary text-xs py-2 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 flex items-center gap-1 font-bold cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
           
           <button 

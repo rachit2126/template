@@ -12,6 +12,74 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
+const INITIAL_PRODUCTS_SEED = [
+  {
+    slug: 'cutie-pack-bundle',
+    title: 'Cutie Pack (All 17 Templates)',
+    category: 'love',
+    price: '₹999',
+    originalPrice: '₹2,583',
+    discount: 'SAVE ₹1,584',
+    badge: 'BUNDLE',
+    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+    description: 'Unlock every current and future premium template. Pay once. Access forever with lifetime hosting and instant WhatsApp support!',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'sweet-birthday',
+    title: 'Sweet Birthday',
+    category: 'birthday',
+    price: '₹79',
+    originalPrice: '₹419',
+    discount: '81% OFF',
+    badge: 'POPULAR',
+    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+    description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'friendship-day',
+    title: 'Friendship Day Special',
+    category: 'friendship',
+    price: '₹309',
+    originalPrice: '₹618',
+    discount: 'FLAT 50% OFF',
+    badge: 'TRENDING',
+    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
+    description: '🎈 They tap the link and a hot-air balloon floats up carrying a letter with their name on it. Then your song starts, and the page unfolds...',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'romantic-sky-lanterns',
+    title: 'Romantic Sky Lanterns',
+    category: 'love',
+    price: '₹399',
+    originalPrice: '₹798',
+    discount: 'FLAT 50% OFF',
+    badge: 'ROMANTIC',
+    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+    description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'netflix-style-memory-lane',
+    title: 'Netflix Style Love Story',
+    category: 'love',
+    price: '₹449',
+    originalPrice: '₹898',
+    discount: 'BESTSELLER',
+    badge: 'BESTSELLER',
+    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
+    description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.',
+    featured: true,
+    active: true
+  }
+];
+
 async function connectToDatabase() {
   if (cached.conn) {
     return cached.conn;
@@ -74,6 +142,13 @@ export default async function handler(req, res) {
 
   try {
     await connectToDatabase();
+
+    // Auto Seed MongoDB Atlas if DB collection has 0 items
+    const totalCount = await Product.countDocuments({});
+    if (totalCount === 0) {
+      console.log("🌱 MongoDB Atlas collection empty. Auto-seeding initial products...");
+      await Product.insertMany(INITIAL_PRODUCTS_SEED);
+    }
 
     if (req.method === 'GET') {
       const { category, featured, active, search, slug } = req.query;
