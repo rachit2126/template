@@ -16,7 +16,10 @@ async function connectToDatabase() {
       bufferCommands: false,
       serverSelectionTimeoutMS: 8000,
     };
+    const maskedUri = MONGODB_URI.replace(/:([^@]+)@/, ':****@');
+    console.log(`[MongoDB Atlas Single Connection] Connecting to: ${maskedUri}`);
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {
+      console.log(`[MongoDB Atlas Single Connection] Connected successfully to database: ${m.connection.name}`);
       return m;
     });
   }
@@ -49,7 +52,7 @@ const ProductSchema = new mongoose.Schema({
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
 export default async function handler(req, res) {
-  // Disable all serverless/CDN/edge caching for 100% fresh data on every request
+  // Disable Edge CDN & Browser caching completely
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
@@ -70,6 +73,8 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       const { category, featured, active, search, slug } = req.query;
+
+      console.log(`[API /api/products Request] URL: ${req.url} Method: ${req.method}`);
 
       if (slug) {
         let product = await Product.findOne({ slug });
@@ -92,8 +97,12 @@ export default async function handler(req, res) {
         ];
       }
 
+      const totalInCollection = await Product.countDocuments({});
       const products = await Product.find(query).sort({ createdAt: -1 });
-      console.log(`[API /api/products] Returned ${products.length} products from MongoDB. IDs:`, products.map(p => p._id.toString()));
+
+      console.log(`[MongoDB Document Count] Total in Collection: ${totalInCollection} | Returned by Query: ${products.length}`);
+      console.log(`[MongoDB Document IDs]:`, products.map(p => ({ id: p._id.toString(), title: p.title, slug: p.slug })));
+
       return res.status(200).json(products);
     }
 
@@ -130,7 +139,8 @@ export default async function handler(req, res) {
       });
 
       await newProduct.save();
-      console.log('✅ Created product in MongoDB Atlas via Vercel Function:', newProduct.title, newProduct._id.toString());
+      const totalAfterSave = await Product.countDocuments({});
+      console.log(`✅ [MongoDB Created Product] Title: ${newProduct.title} | ID: ${newProduct._id.toString()} | New Total Count: ${totalAfterSave}`);
       return res.status(201).json({ success: true, product: newProduct });
     }
 
@@ -150,6 +160,8 @@ export default async function handler(req, res) {
       if (!deleted) {
         deleted = await Product.findOneAndDelete({ slug: id });
       }
+      const totalAfterDelete = await Product.countDocuments({});
+      console.log(`❌ [MongoDB Deleted Product] ID/Slug: ${id} | New Total Count: ${totalAfterDelete}`);
       return res.status(200).json({ success: true, message: 'Product deleted' });
     }
 

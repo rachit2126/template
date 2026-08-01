@@ -6,14 +6,7 @@ import {
   Database, Plus, Trash2, ArrowUpRight, Edit3, Settings, DollarSign, 
   Image as ImageIcon, AlertCircle, X, Check, Loader2, Sparkles, Filter
 } from 'lucide-react';
-
-const INITIAL_TEMPLATES = [
-  { _id: 'sweet-birthday', id: 'sweet-birthday', slug: 'sweet-birthday', title: 'Sweet Birthday', category: 'birthday', price: '₹79', originalPrice: '₹419', discount: '81% OFF', badge: 'POPULAR', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&q=80', description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.', featured: true, active: true },
-  { _id: 'cutie-pack-bundle', id: 'cutie-pack-bundle', slug: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', category: 'love', price: '₹999', originalPrice: '₹2,583', discount: 'SAVE ₹1,584', badge: 'BUNDLE', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', description: 'Unlock every current and future premium template. Pay once. Access forever with lifetime hosting and instant WhatsApp support!', featured: true, active: true },
-  { _id: 'friendship-day', id: 'friendship-day', slug: 'friendship-day', title: 'Friendship Day', category: 'friendship', price: '₹309', originalPrice: '₹618', discount: '50% OFF', badge: 'TRENDING', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80', description: '🎈 Floating hot-air balloon unseal letter carrying their name with background music and custom photo memories timeline.', featured: true, active: true },
-  { _id: 'romantic-sky-lanterns', id: 'romantic-sky-lanterns', slug: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', category: 'love', price: '₹399', originalPrice: '₹798', discount: '50% OFF', badge: 'ROMANTIC', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.', featured: true, active: true },
-  { _id: 'netflix-style-memory-lane', id: 'netflix-style-memory-lane', slug: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', category: 'love', price: '₹449', originalPrice: '₹898', discount: 'BESTSELLER', badge: 'BESTSELLER', image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80', description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.', featured: true, active: true }
-];
+import { fetchApi } from '../utils/api';
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -32,7 +25,7 @@ export default function AdminPage() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
 
   const [orders, setOrders] = useState([]);
-  const [templatesList, setTemplatesList] = useState(INITIAL_TEMPLATES);
+  const [templatesList, setTemplatesList] = useState([]);
 
   // Modals state
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
@@ -77,53 +70,19 @@ export default function AdminPage() {
     fetchProducts();
   }, []);
 
-  const saveProductsToLocalStorage = (list) => {
-    try {
-      localStorage.setItem('cutiepage_products', JSON.stringify(list));
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const fetchOrders = async () => {
-    try {
-      let res = await fetch('/api/orders');
-      if (!res.ok) res = await fetch('http://localhost:5000/api/orders');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) setOrders(data);
-      }
-    } catch (err) {
-      console.log('MongoDB orders offline:', err);
+    const result = await fetchApi('/api/orders');
+    if (result.success && Array.isArray(result.data)) {
+      setOrders(result.data);
     }
   };
 
   const fetchProducts = async () => {
-    // 1. Try fetching live from MongoDB Atlas via Serverless Function
-    try {
-      let res = await fetch('/api/products');
-      if (!res.ok) res = await fetch('http://localhost:5000/api/products');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setTemplatesList(data);
-          saveProductsToLocalStorage(data);
-          return;
-        }
-      }
-    } catch (err) {
-      console.log('MongoDB products API offline, fallback to localStorage:', err);
-    }
-
-    // 2. Fallback to LocalStorage
-    const local = localStorage.getItem('cutiepage_products');
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setTemplatesList(parsed);
-        }
-      } catch (e) {}
+    // Directly fetch live fresh production data from MongoDB API
+    const result = await fetchApi('/api/products');
+    if (result.success && Array.isArray(result.data)) {
+      console.log(`[AdminPage] Fetched ${result.data.length} products from MongoDB.`);
+      setTemplatesList(result.data);
     }
   };
 
@@ -162,7 +121,6 @@ export default function AdminPage() {
 
     setIsSubmittingProd(true);
 
-    const slug = prodTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const newProdPayload = {
       title: prodTitle.trim(),
       description: prodDesc.trim(),
@@ -177,38 +135,20 @@ export default function AdminPage() {
     };
 
     try {
-      let res = await fetch('/api/products', {
+      const result = await fetchApi('/api/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProdPayload)
       });
 
-      if (!res.ok) {
-        res = await fetch('http://localhost:5000/api/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newProdPayload)
-        });
-      }
-
-      if (res.ok) {
-        const data = await res.json();
+      if (result.success) {
         showToast('✅ Product Saved into MongoDB Atlas Database!');
         await fetchProducts(); // Re-fetch clean list from MongoDB Atlas
       } else {
-        const localProduct = { _id: slug, id: slug, slug, ...newProdPayload };
-        const updatedList = [localProduct, ...templatesList];
-        setTemplatesList(updatedList);
-        saveProductsToLocalStorage(updatedList);
-        showToast('✅ Product Added Locally!');
+        showToast('❌ Failed to save product', 'error');
       }
     } catch (err) {
-      console.log('MongoDB server offline, saved to localStorage');
-      const localProduct = { _id: slug, id: slug, slug, ...newProdPayload };
-      const updatedList = [localProduct, ...templatesList];
-      setTemplatesList(updatedList);
-      saveProductsToLocalStorage(updatedList);
-      showToast('✅ Product Saved Locally!');
+      console.error(err);
+      showToast('❌ Error creating product', 'error');
     } finally {
       setIsSubmittingProd(false);
       setShowAddProductModal(false);
@@ -253,26 +193,16 @@ export default function AdminPage() {
     };
 
     try {
-      let res = await fetch(`/api/products?id=${targetId}`, {
+      const result = await fetchApi(`/api/products?id=${targetId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePayload)
       });
-      if (!res.ok) {
-        res = await fetch(`http://localhost:5000/api/products/${targetId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatePayload)
-        });
+      if (result.success) {
+        showToast('✅ Product Updated in MongoDB Atlas!');
+        await fetchProducts();
       }
-      showToast('✅ Product Updated in MongoDB Atlas!');
-      await fetchProducts();
     } catch (err) {
-      console.log('MongoDB offline, updated in localStorage');
-      const updatedList = templatesList.map(p => (p._id === targetId || p.id === targetId) ? { ...p, ...updatePayload } : p);
-      setTemplatesList(updatedList);
-      saveProductsToLocalStorage(updatedList);
-      showToast('✅ Product Updated Locally!');
+      console.error(err);
     } finally {
       setIsSubmittingProd(false);
       setShowEditProductModal(false);
@@ -289,23 +219,17 @@ export default function AdminPage() {
       showToast(`✅ Deleted "${targetItemToDelete.item.title}" successfully!`);
 
       try {
-        let res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
-        if (!res.ok) await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+        await fetchApi(`/api/products?id=${id}`, { method: 'DELETE' });
         await fetchProducts();
       } catch (err) {
         console.error(err);
-        const updatedList = templatesList.filter(p => (p._id !== id && p.id !== id));
-        setTemplatesList(updatedList);
-        saveProductsToLocalStorage(updatedList);
       }
     } else if (targetItemToDelete.type === 'order') {
       const id = targetItemToDelete.item._id || targetItemToDelete.item.id;
-      setOrders(prev => prev.filter(o => (o._id !== id && o.id !== id)));
-      showToast(`✅ Order deleted successfully!`);
-
       try {
-        let res = await fetch(`/api/orders?id=${id}`, { method: 'DELETE' });
-        if (!res.ok) await fetch(`http://localhost:5000/api/orders/${id}`, { method: 'DELETE' });
+        await fetchApi(`/api/orders?id=${id}`, { method: 'DELETE' });
+        await fetchOrders();
+        showToast(`✅ Order deleted successfully!`);
       } catch (err) {
         console.error(err);
       }
@@ -1099,14 +1023,14 @@ export default function AdminPage() {
             <form onSubmit={async (e) => {
               e.preventDefault();
               const newOrd = {
-                _id: `ORD-${Date.now().toString().slice(-4)}`,
                 customerName: newCustomerName,
                 customerPhone: newCustomerPhone,
                 templateTitle: newTemplateTitle,
                 price: newPrice,
                 status: 'Pending WhatsApp'
               };
-              setOrders([newOrd, ...orders]);
+              await fetchApi('/api/orders', { method: 'POST', body: JSON.stringify(newOrd) });
+              await fetchOrders();
               showToast('✅ Order Added Successfully!');
               setShowAddOrderModal(false);
             }} className="space-y-3 text-xs font-bold text-slate-700">
