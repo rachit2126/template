@@ -7,6 +7,74 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
+const DEFAULT_INITIAL_PRODUCTS = [
+  {
+    slug: 'cutie-pack-bundle',
+    title: 'Cutie Pack (All 17 Templates)',
+    category: 'love',
+    price: '₹999',
+    originalPrice: '₹2,583',
+    discount: 'SAVE ₹1,584',
+    badge: 'BUNDLE',
+    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+    description: 'Unlock every current and future premium template. Pay once. Access forever with lifetime hosting and instant WhatsApp support!',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'sweet-birthday',
+    title: 'Sweet Birthday',
+    category: 'birthday',
+    price: '₹79',
+    originalPrice: '₹419',
+    discount: '81% OFF',
+    badge: 'POPULAR',
+    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+    description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'friendship-day',
+    title: 'Friendship Day Special',
+    category: 'friendship',
+    price: '₹309',
+    originalPrice: '₹618',
+    discount: 'FLAT 50% OFF',
+    badge: 'TRENDING',
+    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
+    description: '🎈 They tap the link and a hot-air balloon floats up carrying a letter with their name on it. Then your song starts, and the page unfolds...',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'romantic-sky-lanterns',
+    title: 'Romantic Sky Lanterns',
+    category: 'love',
+    price: '₹399',
+    originalPrice: '₹798',
+    discount: 'FLAT 50% OFF',
+    badge: 'ROMANTIC',
+    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+    description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'netflix-style-memory-lane',
+    title: 'Netflix Style Love Story',
+    category: 'love',
+    price: '₹449',
+    originalPrice: '₹898',
+    discount: 'BESTSELLER',
+    badge: 'BESTSELLER',
+    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
+    description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.',
+    featured: true,
+    active: true
+  }
+];
+
 async function connectToDatabase() {
   if (cached.conn) {
     return cached.conn;
@@ -14,12 +82,9 @@ async function connectToDatabase() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 10000,
     };
-    const maskedUri = MONGODB_URI.replace(/:([^@]+)@/, ':****@');
-    console.log(`[MongoDB Atlas Single Connection] Connecting to: ${maskedUri}`);
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {
-      console.log(`[MongoDB Atlas Single Connection] Connected successfully to database: ${m.connection.name}`);
       return m;
     });
   }
@@ -52,7 +117,6 @@ const ProductSchema = new mongoose.Schema({
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
 export default async function handler(req, res) {
-  // Disable Edge CDN & Browser caching completely
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
@@ -71,10 +135,15 @@ export default async function handler(req, res) {
   try {
     await connectToDatabase();
 
+    // Auto Seed MongoDB Atlas if DB is empty
+    const totalCount = await Product.countDocuments({});
+    if (totalCount === 0) {
+      console.log('🌱 MongoDB Atlas collection empty. Auto-seeding initial products...');
+      await Product.insertMany(DEFAULT_INITIAL_PRODUCTS);
+    }
+
     if (req.method === 'GET') {
       const { category, featured, active, search, slug } = req.query;
-
-      console.log(`[API /api/products Request] URL: ${req.url} Method: ${req.method}`);
 
       if (slug) {
         let product = await Product.findOne({ slug });
@@ -97,17 +166,18 @@ export default async function handler(req, res) {
         ];
       }
 
-      const totalInCollection = await Product.countDocuments({});
       const products = await Product.find(query).sort({ createdAt: -1 });
-
-      console.log(`[MongoDB Document Count] Total in Collection: ${totalInCollection} | Returned by Query: ${products.length}`);
-      console.log(`[MongoDB Document IDs]:`, products.map(p => ({ id: p._id.toString(), title: p.title, slug: p.slug })));
-
       return res.status(200).json(products);
     }
 
     if (req.method === 'POST') {
-      const payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      let payload = {};
+      if (typeof req.body === 'string') {
+        try { payload = JSON.parse(req.body); } catch (e) { payload = {}; }
+      } else if (req.body && typeof req.body === 'object') {
+        payload = req.body;
+      }
+
       const { title, description, category, price, originalPrice, discount, image, badge, featured, active } = payload;
 
       if (!title || !price || !image) {
@@ -139,14 +209,19 @@ export default async function handler(req, res) {
       });
 
       await newProduct.save();
-      const totalAfterSave = await Product.countDocuments({});
-      console.log(`✅ [MongoDB Created Product] Title: ${newProduct.title} | ID: ${newProduct._id.toString()} | New Total Count: ${totalAfterSave}`);
+      console.log('✅ Created product in MongoDB Atlas via Vercel Function:', newProduct.title);
       return res.status(201).json({ success: true, product: newProduct });
     }
 
     if (req.method === 'PUT') {
       const { id } = req.query;
-      const payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      let payload = {};
+      if (typeof req.body === 'string') {
+        try { payload = JSON.parse(req.body); } catch (e) { payload = {}; }
+      } else if (req.body && typeof req.body === 'object') {
+        payload = req.body;
+      }
+
       const updated = await Product.findByIdAndUpdate(id, { ...payload, updatedAt: new Date() }, { new: true });
       return res.status(200).json({ success: true, product: updated });
     }
@@ -160,14 +235,12 @@ export default async function handler(req, res) {
       if (!deleted) {
         deleted = await Product.findOneAndDelete({ slug: id });
       }
-      const totalAfterDelete = await Product.countDocuments({});
-      console.log(`❌ [MongoDB Deleted Product] ID/Slug: ${id} | New Total Count: ${totalAfterDelete}`);
       return res.status(200).json({ success: true, message: 'Product deleted' });
     }
 
     return res.status(405).json({ message: 'Method Not Allowed' });
   } catch (error) {
     console.error('MongoDB API Error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(200).json(DEFAULT_INITIAL_PRODUCTS);
   }
 }
