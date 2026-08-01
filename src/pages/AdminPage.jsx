@@ -17,8 +17,14 @@ const INITIAL_TEMPLATES = [
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Persistent authentication state checking localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('cutiepage_admin_auth') === 'true';
+  });
+
   const [adminPasscode, setAdminPasscode] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [passcodeError, setPasscodeError] = useState(false);
 
   const [activeTab, setActiveTab] = useState('orders');
@@ -122,9 +128,18 @@ export default function AdminPage() {
     if (adminPasscode === 'admin123' || adminPasscode === 'admin') {
       setIsAuthenticated(true);
       setPasscodeError(false);
+      
+      if (rememberMe) {
+        localStorage.setItem('cutiepage_admin_auth', 'true');
+      }
     } else {
       setPasscodeError(true);
     }
+  };
+
+  const handleAdminLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('cutiepage_admin_auth');
   };
 
   const validateProductForm = (title, desc, price, image) => {
@@ -161,7 +176,6 @@ export default function AdminPage() {
       createdAt: new Date().toISOString()
     };
 
-    // 1. Immediately update LocalState & LocalStorage for 100% instant sync on Vercel
     const updatedList = [newProdPayload, ...templatesList];
     setTemplatesList(updatedList);
     saveProductsToLocalStorage(updatedList);
@@ -169,7 +183,6 @@ export default function AdminPage() {
     showToast('✅ Product Added Successfully!');
     setShowAddProductModal(false);
 
-    // 2. Sync with Express MongoDB API
     try {
       await fetch('http://localhost:5000/api/products', {
         method: 'POST',
@@ -349,7 +362,20 @@ export default function AdminPage() {
               )}
             </div>
 
-            <button type="submit" className="btn-primary w-full py-3.5 text-xs font-bold justify-center bg-gradient-to-r from-purple-600 to-indigo-600">
+            {/* Remember Me Checkbox */}
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                <input 
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 accent-purple-600 rounded cursor-pointer"
+                />
+                <span>Remember me on this device</span>
+              </label>
+            </div>
+
+            <button type="submit" className="btn-primary w-full py-3.5 text-xs font-bold justify-center bg-gradient-to-r from-purple-600 to-indigo-600 cursor-pointer">
               Access Admin Dashboard →
             </button>
           </form>
@@ -413,7 +439,7 @@ export default function AdminPage() {
           </button>
           
           <button 
-            onClick={() => setIsAuthenticated(false)}
+            onClick={handleAdminLogout}
             className="btn-secondary text-xs py-2 px-3 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold cursor-pointer"
           >
             Logout
