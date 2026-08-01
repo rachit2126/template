@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, Users, Eye, TrendingUp, Search, CheckCircle, 
   MessageCircle, ExternalLink, ShieldCheck, Lock, RefreshCw, 
-  Database, Plus, Trash2, ArrowUpRight, Edit3, Settings, DollarSign
+  Database, Plus, Trash2, ArrowUpRight, Edit3, Settings, DollarSign, Image as ImageIcon
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -17,20 +17,33 @@ export default function AdminPage() {
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
 
-  // New Order Modal state
+  // Modals state
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+
+  // New Order Form state
   const [newCustomerName, setNewCustomerName] = useState('');
   const [newCustomerPhone, setNewCustomerPhone] = useState('');
   const [newTemplateTitle, setNewTemplateTitle] = useState('Sweet Birthday');
   const [newPrice, setNewPrice] = useState('₹79 INR');
 
-  // Editable Templates state
+  // New Product Form state
+  const [prodTitle, setProdTitle] = useState('');
+  const [prodSlug, setProdSlug] = useState('');
+  const [prodCategory, setProdCategory] = useState('love');
+  const [prodPrice, setProdPrice] = useState('₹399');
+  const [prodOriginalPrice, setProdOriginalPrice] = useState('₹798');
+  const [prodDiscount, setProdDiscount] = useState('50% OFF');
+  const [prodImage, setProdImage] = useState('https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80');
+  const [prodDesc, setProdDesc] = useState('');
+
+  // Templates Catalog state with images
   const [templatesList, setTemplatesList] = useState([
-    { id: 'sweet-birthday', title: 'Sweet Birthday', price: '₹79', discount: '81% OFF', status: 'Active' },
-    { id: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', price: '₹999', discount: 'SAVE ₹1,584', status: 'Active' },
-    { id: 'friendship-day', title: 'Friendship Day', price: '₹309', discount: '50% OFF', status: 'Active' },
-    { id: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', price: '₹399', discount: '50% OFF', status: 'Active' },
-    { id: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', price: '₹449', discount: 'BESTSELLER', status: 'Active' }
+    { id: 'sweet-birthday', title: 'Sweet Birthday', category: 'birthday', price: '₹79', originalPrice: '₹419', discount: '81% OFF', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { id: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', category: 'love', price: '₹999', originalPrice: '₹2,583', discount: 'SAVE ₹1,584', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { id: 'friendship-day', title: 'Friendship Day', category: 'friendship', price: '₹309', originalPrice: '₹618', discount: '50% OFF', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { id: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', category: 'love', price: '₹399', originalPrice: '₹798', discount: '50% OFF', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { id: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', category: 'love', price: '₹449', originalPrice: '₹898', discount: 'BESTSELLER', image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80', status: 'Active' }
   ]);
 
   useEffect(() => {
@@ -121,6 +134,18 @@ export default function AdminPage() {
     }));
   };
 
+  const handleDeleteOrder = (orderId) => {
+    if (window.confirm(`Are you sure you want to delete order ${orderId}?`)) {
+      setOrders(prev => prev.filter(ord => ord._id !== orderId));
+    }
+  };
+
+  const handleDeleteProduct = (prodId) => {
+    if (window.confirm(`Are you sure you want to delete product "${prodId}"?`)) {
+      setTemplatesList(prev => prev.filter(t => t.id !== prodId));
+    }
+  };
+
   const handleAddOrder = (e) => {
     e.preventDefault();
     if (!newCustomerName || !newCustomerPhone) return;
@@ -139,6 +164,29 @@ export default function AdminPage() {
     setNewCustomerName('');
     setNewCustomerPhone('');
     setShowAddOrderModal(false);
+  };
+
+  const handleAddProduct = (e) => {
+    e.preventDefault();
+    if (!prodTitle) return;
+
+    const slug = prodSlug || prodTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const newProd = {
+      id: slug,
+      title: prodTitle,
+      category: prodCategory,
+      price: prodPrice,
+      originalPrice: prodOriginalPrice,
+      discount: prodDiscount,
+      image: prodImage || 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80',
+      status: 'Active'
+    };
+
+    setTemplatesList([newProd, ...templatesList]);
+    setProdTitle('');
+    setProdSlug('');
+    setProdDesc('');
+    setShowAddProductModal(false);
   };
 
   const hostedProjects = [
@@ -203,26 +251,35 @@ export default function AdminPage() {
                 MongoDB Live 🍃
               </span>
             </div>
-            <p className="text-xs text-slate-600 font-medium">Manage customer orders, live hosted surprise pages, and catalog pricing.</p>
+            <p className="text-xs text-slate-600 font-medium">Manage customer orders, live hosted surprise pages, and catalog products with images.</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button 
             onClick={() => setShowAddOrderModal(true)}
-            className="btn-primary text-xs py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1.5 shadow-sm"
+            className="btn-primary text-xs py-2 px-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1 shadow-sm"
           >
             <Plus className="w-4 h-4" /> Add Order
           </button>
+
+          <button 
+            onClick={() => setShowAddProductModal(true)}
+            className="btn-primary text-xs py-2 px-3.5 bg-pink-600 hover:bg-pink-700 text-white font-bold flex items-center gap-1 shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Add Product
+          </button>
+
           <button 
             onClick={fetchOrders}
-            className="btn-secondary text-xs py-2 px-4 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 flex items-center gap-1.5 font-bold"
+            className="btn-secondary text-xs py-2 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 flex items-center gap-1 font-bold"
           >
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </button>
+          
           <button 
             onClick={() => setIsAuthenticated(false)}
-            className="btn-secondary text-xs py-2 px-4 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold"
+            className="btn-secondary text-xs py-2 px-3 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold"
           >
             Logout
           </button>
@@ -272,7 +329,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Admin Tabs */}
+      {/* Admin Control Tabs */}
       <div className="flex border-b border-slate-200 gap-6 text-sm font-bold">
         <button 
           onClick={() => setActiveTab('orders')}
@@ -294,7 +351,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* TAB 1: Customer Orders */}
+      {/* TAB 1: Customer Orders with Delete Feature */}
       {activeTab === 'orders' && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -317,7 +374,7 @@ export default function AdminPage() {
                 <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[11px]">
                   <th className="py-3 px-4">Order ID</th>
                   <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Template</th>
+                  <th className="py-3 px-4">Template Purchased</th>
                   <th className="py-3 px-4">Price</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -343,12 +400,20 @@ export default function AdminPage() {
                         {ord.status} ⚡
                       </button>
                     </td>
-                    <td className="py-4 px-4 text-right">
+                    <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
                       <button 
                         onClick={() => handleWhatsAppContact(ord.customerPhone, ord.templateTitle)}
-                        className="btn-primary text-xs py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 ml-auto shadow-sm"
+                        className="btn-primary text-xs py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm"
                       >
                         <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                      </button>
+
+                      <button 
+                        onClick={() => handleDeleteOrder(ord._id)}
+                        className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors"
+                        title="Delete Order"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
                   </tr>
@@ -402,41 +467,65 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* TAB 3: Templates Catalog */}
+      {/* TAB 3: Templates Catalog with Image Thumbnails & Delete Product */}
       {activeTab === 'templates' && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500">Manage Product Catalog & Pricing</span>
+            <button 
+              onClick={() => setShowAddProductModal(true)}
+              className="btn-primary text-xs py-1.5 px-3.5 bg-pink-600 hover:bg-pink-700 text-white font-bold flex items-center gap-1 shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add New Product
+            </button>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[11px]">
+                  <th className="py-3 px-4">Thumbnail</th>
                   <th className="py-3 px-4">Template Title</th>
                   <th className="py-3 px-4">Price</th>
                   <th className="py-3 px-4">Discount Badge</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">View</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {templatesList.map((t) => (
                   <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                        <img src={t.image} alt={t.title} className="w-full h-full object-cover" />
+                      </div>
+                    </td>
                     <td className="py-4 px-4 font-bold text-slate-900">{t.title}</td>
                     <td className="py-4 px-4 font-black text-purple-700">{t.price}</td>
                     <td className="py-4 px-4">
-                      <span className="text-[10px] font-extrabold bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-extrabold bg-pink-100 text-pink-800 px-2.5 py-0.5 rounded-full">
                         {t.discount}
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
                         {t.status}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-right">
+                    <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
                       <button 
                         onClick={() => navigate(`/products/${t.id}`)}
-                        className="btn-secondary text-xs py-1.5 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 ml-auto flex items-center gap-1 font-bold"
+                        className="btn-secondary text-xs py-1.5 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 font-bold flex items-center gap-1"
                       >
                         <ExternalLink className="w-3.5 h-3.5" /> Details
+                      </button>
+
+                      <button 
+                        onClick={() => handleDeleteProduct(t.id)}
+                        className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors"
+                        title="Delete Product"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
                   </tr>
@@ -515,6 +604,92 @@ export default function AdminPage() {
                   className="btn-primary py-2 px-5 text-xs font-bold bg-purple-600 text-white"
                 >
                   Save Order
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Product / Template Modal with Image */}
+      {showAddProductModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 p-6 rounded-3xl max-w-md w-full space-y-4 shadow-2xl animate-fadeIn">
+            <h3 className="text-lg font-extrabold text-slate-900 font-['Outfit']">Add New Product / Template</h3>
+            
+            <form onSubmit={handleAddProduct} className="space-y-3 text-xs font-bold text-slate-700">
+              <div className="space-y-1">
+                <label>Product Title</label>
+                <input 
+                  type="text" 
+                  value={prodTitle}
+                  onChange={(e) => setProdTitle(e.target.value)}
+                  placeholder="e.g. Valentine Surprise Card"
+                  required
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-pink-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label>Category</label>
+                <select 
+                  value={prodCategory}
+                  onChange={(e) => setProdCategory(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-pink-600"
+                >
+                  <option value="love">Love & Romance</option>
+                  <option value="birthday">Birthday</option>
+                  <option value="anniversary">Anniversary</option>
+                  <option value="friendship">Friendship</option>
+                  <option value="apology">Apology</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label>Price INR</label>
+                  <input 
+                    type="text" 
+                    value={prodPrice}
+                    onChange={(e) => setProdPrice(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-pink-600"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label>Discount Badge</label>
+                  <input 
+                    type="text" 
+                    value={prodDiscount}
+                    onChange={(e) => setProdDiscount(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-pink-600"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label>Product Image URL</label>
+                <input 
+                  type="text" 
+                  value={prodImage}
+                  onChange={(e) => setProdImage(e.target.value)}
+                  placeholder="Image URL (e.g. https://images.unsplash.com/...)"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-pink-600"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddProductModal(false)}
+                  className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100 text-slate-700"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="btn-primary py-2 px-5 text-xs font-bold bg-pink-600 text-white"
+                >
+                  Save Product
                 </button>
               </div>
             </form>
