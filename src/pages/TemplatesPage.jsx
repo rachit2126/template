@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Star, Crown, MessageCircle } from 'lucide-react';
+import { Search, Star, Crown, MessageCircle, Filter } from 'lucide-react';
 
 export default function TemplatesPage() {
   const navigate = useNavigate();
@@ -129,19 +129,19 @@ export default function TemplatesPage() {
   }, [selectedCategory, searchQuery]);
 
   return (
-    <div className="min-h-screen text-slate-900 font-['Plus_Jakarta_Sans'] pb-20">
+    <div className="min-h-screen text-slate-900 font-['Plus_Jakarta_Sans'] pb-28">
       
       {/* Top Announcement Bar */}
       <div className="bg-gradient-to-r from-purple-700 via-indigo-600 to-pink-600 text-white text-xs sm:text-sm font-semibold py-2.5 px-4 text-center shadow-sm">
         <span>Cutiepage is now <strong>40,000+ Users strong</strong> with <strong>13,000+ Orders!</strong> 💖</span>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12">
         
-        {/* Page Title & Breadcrumbs Header */}
-        <div className="text-left space-y-2 mb-10 border-b border-slate-200 pb-6">
+        {/* Page Title & Header */}
+        <div className="text-left space-y-1.5 mb-6 sm:mb-8 border-b border-slate-200 pb-5">
           <span className="text-xs font-bold text-pink-600 tracking-widest uppercase">TEMPLATES</span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight">
             Find the right page and make it yours.
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium">
@@ -149,11 +149,47 @@ export default function TemplatesPage() {
           </p>
         </div>
 
+        {/* MOBILE CATEGORY FILTER BAR & SEARCH (Visible on Mobile & Tablet) */}
+        <div className="block lg:hidden space-y-4 mb-6 text-left">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search templates..."
+              className="w-full bg-white border border-slate-200 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-600 shadow-sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {categories.map((c) => {
+              const isSelected = selectedCategory === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCategory(c.id)}
+                  className={`px-3.5 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                    isSelected 
+                      ? 'bg-purple-600 text-white font-extrabold shadow-md' 
+                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{c.name}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                    {c.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* 2-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Left Sidebar Filter Column */}
-          <aside className="lg:col-span-3 bg-white border border-slate-200 p-6 rounded-3xl space-y-6 text-left shadow-sm sticky top-24">
+          {/* DESKTOP SIDEBAR FILTER (Hidden on Mobile, Visible on lg screens) */}
+          <aside className="hidden lg:block lg:col-span-3 bg-white border border-slate-200 p-6 rounded-3xl space-y-6 text-left shadow-sm sticky top-24">
             <div>
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">FILTER</span>
               
@@ -199,7 +235,7 @@ export default function TemplatesPage() {
             </div>
           </aside>
 
-          {/* Right Cards Grid */}
+          {/* Right Cards Grid Column */}
           <main className="lg:col-span-9 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
@@ -210,7 +246,7 @@ export default function TemplatesPage() {
                   return (
                     <div 
                       key={item.slug}
-                      className="md:col-span-2 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border-2 border-purple-500/40 p-6 sm:p-8 rounded-3xl relative overflow-hidden text-left space-y-5 shadow-sm group"
+                      className="md:col-span-2 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border-2 border-purple-500/40 p-5 sm:p-8 rounded-3xl relative overflow-hidden text-left space-y-5 shadow-sm group"
                     >
                       <div className="flex items-center justify-between">
                         <span className="bg-purple-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
@@ -221,7 +257,7 @@ export default function TemplatesPage() {
                         </span>
                       </div>
 
-                      <div className="relative h-60 rounded-2xl overflow-hidden border border-slate-200 shadow-md cursor-pointer" onClick={() => navigate(`/templates/${item.slug}`)}>
+                      <div className="relative h-56 sm:h-60 rounded-2xl overflow-hidden border border-slate-200 shadow-md cursor-pointer" onClick={() => navigate(`/templates/${item.slug}`)}>
                         <img 
                           src={item.image} 
                           alt={item.title} 
@@ -249,13 +285,13 @@ export default function TemplatesPage() {
                         <div className="flex items-center gap-3">
                           <button 
                             onClick={() => navigate(`/templates/${item.slug}`)}
-                            className="btn-secondary text-xs py-2.5 px-5 bg-white border-slate-300 text-slate-800 hover:bg-slate-50 font-bold"
+                            className="btn-secondary text-xs py-2.5 px-4 bg-white border-slate-300 text-slate-800 hover:bg-slate-50 font-bold"
                           >
                             See details
                           </button>
                           <button 
                             onClick={() => handleBuyOnWhatsApp(item.title, item.price)}
-                            className="btn-primary text-xs py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                            className="btn-primary text-xs py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
                           >
                             <MessageCircle className="w-3.5 h-3.5" /> Buy on WhatsApp
                           </button>
@@ -271,7 +307,7 @@ export default function TemplatesPage() {
                     key={item.slug}
                     className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col justify-between text-left group shadow-sm hover:border-purple-400 hover:shadow-md transition-all"
                   >
-                    <div className="relative h-56 overflow-hidden bg-slate-100 cursor-pointer" onClick={() => navigate(`/templates/${item.slug}`)}>
+                    <div className="relative h-52 sm:h-56 overflow-hidden bg-slate-100 cursor-pointer" onClick={() => navigate(`/templates/${item.slug}`)}>
                       <img 
                         src={item.image} 
                         alt={item.title} 
@@ -288,7 +324,7 @@ export default function TemplatesPage() {
                       <div className="space-y-2">
                         <h3 
                           onClick={() => navigate(`/templates/${item.slug}`)}
-                          className="text-xl font-bold text-slate-900 font-['Outfit'] group-hover:text-purple-600 transition-colors cursor-pointer"
+                          className="text-lg sm:text-xl font-bold text-slate-900 font-['Outfit'] group-hover:text-purple-600 transition-colors cursor-pointer"
                         >
                           {item.title}
                         </h3>
@@ -321,7 +357,7 @@ export default function TemplatesPage() {
                           </button>
                           <button 
                             onClick={() => handleBuyOnWhatsApp(item.title, item.price)}
-                            className="btn-primary text-xs py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm"
+                            className="btn-primary text-xs py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm"
                           >
                             <MessageCircle className="w-3.5 h-3.5" /> Buy Now
                           </button>
