@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, Heart, Play, Pause, Lock, Sparkles, Image as ImageIcon, Music, Send } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export default function PhoneMockup({ activeOccasion, customName = "Ananya" }) {
+export default function PhoneMockup({ activeOccasion, customName = "Roshni" }) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [envelopeOpen, setEnvelopeOpen] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
@@ -58,81 +58,79 @@ export default function PhoneMockup({ activeOccasion, customName = "Ananya" }) {
             </span>
             <button 
               onClick={() => setIsPlaying(!isPlaying)}
-              className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/90 hover:text-white hover:bg-white/20 transition-all"
-              title="Toggle Music"
+              className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-slate-300 hover:text-white"
             >
-              {isPlaying ? <Volume2 className="w-4 h-4 text-pink-400" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
+              {isPlaying ? <Volume2 className="w-3.5 h-3.5 text-pink-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
             </button>
           </div>
 
-          {/* Recipient Greeting Card */}
-          <div className="mt-3 text-center z-10">
-            <h3 className="text-xl font-extrabold font-['Outfit'] gradient-text leading-snug">
-              Hey {customName}! 💖
+          {/* Main Hero Header Inside Phone */}
+          <div className="text-center my-4 space-y-1.5 z-10">
+            <h3 className="text-xl font-extrabold text-white font-['Outfit'] tracking-tight flex items-center justify-center gap-1.5">
+              <span>Hey {customName || 'Roshni'}!</span>
+              <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
             </h3>
-            <p className="text-xs text-pink-200/90 font-medium mt-1 px-2 leading-relaxed">
-              You make my world <span className="text-pink-400 font-bold italic font-['Dancing_Script'] text-base">beautiful</span> every single day.
+            <p className="text-[11px] text-pink-200/90 leading-tight">
+              {activeOccasion?.tagline || 'You make my world beautiful every single day.'}
             </p>
-            <div className="inline-block mt-1 px-3 py-0.5 bg-pink-500/20 border border-pink-400/30 rounded-full text-[11px] font-bold text-pink-300">
-              Happy {activeOccasion?.title || 'Anniversary'}! ✨
+            <div className="pt-1">
+              <span className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[9px] font-extrabold px-3 py-1 rounded-full shadow-md">
+                Happy Love! ✨
+              </span>
             </div>
           </div>
 
-          {/* Stacked Photos Slider */}
-          <div className="my-3 relative w-full h-44 rounded-2xl overflow-hidden border border-white/20 shadow-2xl group cursor-pointer z-10" onClick={() => setActivePhoto((activePhoto + 1) % photos.length)}>
+          {/* Photo Gallery Component */}
+          <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-black/40 h-44 shadow-lg group z-10 my-2">
             <img 
               src={photos[activePhoto]} 
-              alt="Couples moment" 
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              alt="Memory" 
+              className="w-full h-full object-cover transition-all duration-700"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end justify-between p-3">
-              <div className="flex items-center gap-1.5 text-xs text-white/90 font-medium">
-                <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
-                <span>Our Favorite Memory ({activePhoto + 1}/{photos.length})</span>
-              </div>
-              
-              {/* Play Audio Indicator */}
-              <button className="w-8 h-8 rounded-full bg-pink-500/80 backdrop-blur-md flex items-center justify-center text-white shadow-lg animate-pulse">
-                {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-between p-2.5 text-[10px]">
+              <span className="text-pink-200 font-semibold flex items-center gap-1">
+                <ImageIcon className="w-3 h-3 text-pink-400" />
+                Our Favorite Memory ({activePhoto + 1}/3)
+              </span>
+              <button 
+                onClick={() => setActivePhoto((prev) => (prev + 1) % photos.length)}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-md p-1 rounded-full"
+              >
+                <Play className="w-3 h-3 text-white fill-white" />
               </button>
             </div>
           </div>
 
-          {/* Sealed Romantic Love Envelope */}
+          {/* Interactive Unseal Envelope */}
           <div 
             onClick={handleEnvelopeClick}
-            className="my-1 relative w-full bg-gradient-to-r from-rose-900/40 to-pink-900/40 border border-pink-500/30 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer hover:border-pink-400 transition-all z-10 group"
+            className="bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-pink-500/30 rounded-2xl p-3.5 text-left cursor-pointer hover:border-pink-500/60 transition-all shadow-md z-10 relative overflow-hidden"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                💌
-              </div>
-              <div className="text-left">
-                <div className="text-xs font-bold text-white flex items-center gap-1">
-                  Secret Love Note
-                  <Sparkles className="w-3 h-3 text-amber-300" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-pink-500/20 border border-pink-500/40 flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5 text-pink-300" />
                 </div>
-                <div className="text-[10px] text-pink-200/70">
-                  {envelopeOpen ? "Tap to seal letter" : "Tap to open surprise letter"}
+                <div>
+                  <div className="text-[11px] font-bold text-white">Secret Love Note 🪄</div>
+                  <div className="text-[9px] text-pink-300">Tap to open surprise letter</div>
                 </div>
               </div>
+              <span className="text-xs animate-bounce">💖</span>
             </div>
 
-            <div className="w-7 h-7 rounded-full bg-rose-500/30 border border-rose-400/40 flex items-center justify-center text-xs">
-              {envelopeOpen ? '✨' : '💖'}
-            </div>
+            {envelopeOpen && (
+              <div className="mt-3 pt-3 border-t border-pink-500/20 text-[10px] text-pink-100 leading-relaxed font-serif animate-fadeIn">
+                "Dearest {customName || 'Roshni'}, every moment spent with you is like a beautiful dream come true. Thank you for filling my life with endless smiles..."
+              </div>
+            )}
           </div>
 
-          {/* Opened Letter Modal Preview inside phone */}
-          {envelopeOpen && (
-            <div className="mt-1 p-3 bg-pink-950/80 border border-pink-400/40 rounded-xl text-[11px] text-pink-100 italic leading-relaxed animate-fadeIn z-10">
-              "From the day we met, every second with you has been pure magic. Here's to forever together!" 🌹
-            </div>
-          )}
-
-          {/* Bottom Hint Indicator */}
-          <div className="mt-2 text-center text-[10px] text-pink-300/70 flex items-center justify-center gap-1 animate-bounce z-10">
-            <span>Scroll to experience magic 💫</span>
+          {/* Bottom Footer Note inside Phone */}
+          <div className="text-center pt-2 z-10">
+            <span className="text-[9px] text-pink-300/70 tracking-wider uppercase font-medium">
+              Scroll to experience magic 💫
+            </span>
           </div>
 
         </div>

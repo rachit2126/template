@@ -6,7 +6,7 @@ import FloatingBadges from './FloatingBadges';
 
 export default function HeroSection({ activeOccasion }) {
   const navigate = useNavigate();
-  const [recipientName, setRecipientName] = useState('Ananya');
+  const [recipientName, setRecipientName] = useState('Roshni');
 
   const WHATSAPP_NUMBER = '919119055155';
 
@@ -18,7 +18,7 @@ export default function HeroSection({ activeOccasion }) {
   ];
 
   const handleWhatsAppContact = () => {
-    const text = encodeURIComponent("Hi Cutiepage! I want to order a digital surprise page. Please share template options & pricing! 💖");
+    const text = encodeURIComponent(`Hi Cutiepage! I want to order a digital surprise page for ${recipientName}. Please share template options & pricing! 💖`);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
   };
 
@@ -108,7 +108,7 @@ export default function HeroSection({ activeOccasion }) {
                 type="text" 
                 value={recipientName} 
                 onChange={(e) => setRecipientName(e.target.value)}
-                placeholder="Enter Recipient Name (e.g. Rahul)"
+                placeholder="Enter Recipient Name (e.g. Roshni)"
                 className="bg-black/60 border border-white/20 rounded-full px-4 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-pink-400 w-full"
               />
               <span className="text-xs text-pink-400 font-bold pr-2 whitespace-nowrap">Live ⚡</span>
