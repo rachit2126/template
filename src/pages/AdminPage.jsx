@@ -26,7 +26,7 @@ export default function AdminPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [passcodeError, setPasscodeError] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState('templates');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
@@ -99,16 +99,7 @@ export default function AdminPage() {
   };
 
   const fetchProducts = async () => {
-    const local = localStorage.getItem('cutiepage_products');
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setTemplatesList(parsed);
-        }
-      } catch (e) {}
-    }
-
+    // 1. Try fetching live from MongoDB Atlas via Serverless Function
     try {
       let res = await fetch('/api/products');
       if (!res.ok) res = await fetch('http://localhost:5000/api/products');
@@ -117,10 +108,22 @@ export default function AdminPage() {
         if (Array.isArray(data) && data.length > 0) {
           setTemplatesList(data);
           saveProductsToLocalStorage(data);
+          return;
         }
       }
     } catch (err) {
-      console.log('MongoDB products API offline:', err);
+      console.log('MongoDB products API offline, fallback to localStorage:', err);
+    }
+
+    // 2. Fallback to LocalStorage
+    const local = localStorage.getItem('cutiepage_products');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTemplatesList(parsed);
+        }
+      } catch (e) {}
     }
   };
 
@@ -161,9 +164,6 @@ export default function AdminPage() {
 
     const slug = prodTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const newProdPayload = {
-      _id: slug,
-      id: slug,
-      slug: slug,
       title: prodTitle.trim(),
       description: prodDesc.trim(),
       category: prodCategory,
@@ -173,16 +173,8 @@ export default function AdminPage() {
       badge: prodBadge.trim(),
       image: prodImage.trim(),
       featured: prodFeatured,
-      active: prodActive,
-      createdAt: new Date().toISOString()
+      active: prodActive
     };
-
-    const updatedList = [newProdPayload, ...templatesList];
-    setTemplatesList(updatedList);
-    saveProductsToLocalStorage(updatedList);
-
-    showToast('✅ Product Added Successfully to MongoDB!');
-    setShowAddProductModal(false);
 
     try {
       let res = await fetch('/api/products', {
@@ -190,17 +182,36 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProdPayload)
       });
+
       if (!res.ok) {
-        await fetch('http://localhost:5000/api/products', {
+        res = await fetch('http://localhost:5000/api/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newProdPayload)
         });
       }
+
+      if (res.ok) {
+        const data = await res.json();
+        showToast('✅ Product Saved into MongoDB Atlas Database!');
+        await fetchProducts(); // Re-fetch clean list from MongoDB Atlas
+      } else {
+        const localProduct = { _id: slug, id: slug, slug, ...newProdPayload };
+        const updatedList = [localProduct, ...templatesList];
+        setTemplatesList(updatedList);
+        saveProductsToLocalStorage(updatedList);
+        showToast('✅ Product Added Locally!');
+      }
     } catch (err) {
       console.log('MongoDB server offline, saved to localStorage');
+      const localProduct = { _id: slug, id: slug, slug, ...newProdPayload };
+      const updatedList = [localProduct, ...templatesList];
+      setTemplatesList(updatedList);
+      saveProductsToLocalStorage(updatedList);
+      showToast('✅ Product Saved Locally!');
     } finally {
       setIsSubmittingProd(false);
+      setShowAddProductModal(false);
       resetProductForm();
     }
   };
@@ -241,14 +252,6 @@ export default function AdminPage() {
       active: prodActive
     };
 
-    const updatedList = templatesList.map(p => (p._id === targetId || p.id === targetId) ? { ...p, ...updatePayload } : p);
-    setTemplatesList(updatedList);
-    saveProductsToLocalStorage(updatedList);
-
-    showToast('✅ Product Updated Successfully!');
-    setShowEditProductModal(false);
-    setEditingProduct(null);
-
     try {
       let res = await fetch(`/api/products?id=${targetId}`, {
         method: 'PUT',
@@ -256,16 +259,24 @@ export default function AdminPage() {
         body: JSON.stringify(updatePayload)
       });
       if (!res.ok) {
-        await fetch(`http://localhost:5000/api/products/${targetId}`, {
+        res = await fetch(`http://localhost:5000/api/products/${targetId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatePayload)
         });
       }
+      showToast('✅ Product Updated in MongoDB Atlas!');
+      await fetchProducts();
     } catch (err) {
       console.log('MongoDB offline, updated in localStorage');
+      const updatedList = templatesList.map(p => (p._id === targetId || p.id === targetId) ? { ...p, ...updatePayload } : p);
+      setTemplatesList(updatedList);
+      saveProductsToLocalStorage(updatedList);
+      showToast('✅ Product Updated Locally!');
     } finally {
       setIsSubmittingProd(false);
+      setShowEditProductModal(false);
+      setEditingProduct(null);
       resetProductForm();
     }
   };
@@ -275,16 +286,17 @@ export default function AdminPage() {
 
     if (targetItemToDelete.type === 'product') {
       const id = targetItemToDelete.item._id || targetItemToDelete.item.id;
-      const updatedList = templatesList.filter(p => (p._id !== id && p.id !== id));
-      setTemplatesList(updatedList);
-      saveProductsToLocalStorage(updatedList);
       showToast(`✅ Deleted "${targetItemToDelete.item.title}" successfully!`);
 
       try {
         let res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
         if (!res.ok) await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+        await fetchProducts();
       } catch (err) {
         console.error(err);
+        const updatedList = templatesList.filter(p => (p._id !== id && p.id !== id));
+        setTemplatesList(updatedList);
+        saveProductsToLocalStorage(updatedList);
       }
     } else if (targetItemToDelete.type === 'order') {
       const id = targetItemToDelete.item._id || targetItemToDelete.item.id;

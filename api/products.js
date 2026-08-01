@@ -2,15 +2,31 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rachit4907_db_user:3Jmy3PRD0an8rAAU@cluster0.4xensun.mongodb.net/cutiepage?retryWrites=true&w=majority';
 
-let cachedDb = null;
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 async function connectToDatabase() {
-  if (cachedDb && mongoose.connection.readyState === 1) {
-    return cachedDb;
+  if (cached.conn) {
+    return cached.conn;
   }
-  const db = await mongoose.connect(MONGODB_URI);
-  cachedDb = db;
-  return db;
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 8000,
+    };
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {
+      return m;
+    });
+  }
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
+  return cached.conn;
 }
 
 const ProductSchema = new mongoose.Schema({
@@ -33,7 +49,7 @@ const ProductSchema = new mongoose.Schema({
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
@@ -57,7 +73,7 @@ export default async function handler(req, res) {
           product = await Product.findById(slug);
         }
         if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
-        return res.json(product);
+        return res.status(200).json(product);
       }
 
       let query = {};
@@ -73,11 +89,12 @@ export default async function handler(req, res) {
       }
 
       const products = await Product.find(query).sort({ createdAt: -1 });
-      return res.json(products);
+      return res.status(200).json(products);
     }
 
     if (req.method === 'POST') {
-      const { title, description, category, price, originalPrice, discount, image, badge, featured, active } = req.body;
+      const payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      const { title, description, category, price, originalPrice, discount, image, badge, featured, active } = payload;
 
       if (!title || !price || !image) {
         return res.status(400).json({ success: false, message: 'Title, Price, and Image are required' });
@@ -108,13 +125,15 @@ export default async function handler(req, res) {
       });
 
       await newProduct.save();
+      console.log('✅ Created product in MongoDB Atlas via Vercel Function:', newProduct.title);
       return res.status(201).json({ success: true, product: newProduct });
     }
 
     if (req.method === 'PUT') {
       const { id } = req.query;
-      const updated = await Product.findByIdAndUpdate(id, { ...req.body, updatedAt: new Date() }, { new: true });
-      return res.json({ success: true, product: updated });
+      const payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      const updated = await Product.findByIdAndUpdate(id, { ...payload, updatedAt: new Date() }, { new: true });
+      return res.status(200).json({ success: true, product: updated });
     }
 
     if (req.method === 'DELETE') {
@@ -126,11 +145,12 @@ export default async function handler(req, res) {
       if (!deleted) {
         deleted = await Product.findOneAndDelete({ slug: id });
       }
-      return res.json({ success: true, message: 'Product deleted' });
+      return res.status(200).json({ success: true, message: 'Product deleted' });
     }
 
     return res.status(405).json({ message: 'Method Not Allowed' });
   } catch (error) {
+    console.error('MongoDB API Error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }

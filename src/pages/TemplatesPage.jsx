@@ -89,18 +89,7 @@ export default function TemplatesPage() {
   }, []);
 
   const loadProducts = async () => {
-    // 1. Try reading from LocalStorage first for instant render
-    const localData = localStorage.getItem('cutiepage_products');
-    if (localData) {
-      try {
-        const parsed = JSON.parse(localData);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setProducts(parsed.filter(p => p.active !== false));
-        }
-      } catch (e) {}
-    }
-
-    // 2. Fetch from Vercel Serverless API /api/products
+    // 1. Fetch directly from Vercel Serverless MongoDB Atlas API FIRST
     try {
       let res = await fetch('/api/products?active=true');
       if (!res.ok) res = await fetch('http://localhost:5000/api/products?active=true');
@@ -109,10 +98,22 @@ export default function TemplatesPage() {
         if (Array.isArray(data) && data.length > 0) {
           setProducts(data);
           localStorage.setItem('cutiepage_products', JSON.stringify(data));
+          return;
         }
       }
     } catch (err) {
-      console.log('MongoDB catalog API offline');
+      console.log('MongoDB API offline, checking local storage');
+    }
+
+    // 2. LocalStorage Fallback if API fails
+    const localData = localStorage.getItem('cutiepage_products');
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setProducts(parsed.filter(p => p.active !== false));
+        }
+      } catch (e) {}
     }
   };
 
@@ -256,7 +257,7 @@ export default function TemplatesPage() {
           {/* Right Cards Column */}
           <main className="lg:col-span-9 space-y-8">
             
-            {/* 1. TOP PINNED BUNDLE CARD: Cutie Pack (Always Stays at the Very Top) */}
+            {/* 1. TOP PINNED BUNDLE CARD: Cutie Pack */}
             {bundleProduct && (
               <div className="bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border-2 border-purple-500/40 p-5 sm:p-8 rounded-3xl relative overflow-hidden text-left space-y-5 shadow-md group">
                 <div className="flex items-center justify-between">
@@ -314,7 +315,7 @@ export default function TemplatesPage() {
               </div>
             )}
 
-            {/* 2. REGULAR TEMPLATES GRID (All Other Products Go Under Cutie Pack) */}
+            {/* 2. REGULAR TEMPLATES GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {regularProducts.map((item, idx) => {
                 const itemSlug = item.slug || item._id || `template-${idx}`;
