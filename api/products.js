@@ -82,7 +82,7 @@ async function connectToDatabase() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 3000,
     };
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {
       return m;
@@ -135,13 +135,6 @@ export default async function handler(req, res) {
   try {
     await connectToDatabase();
 
-    // Auto Seed MongoDB Atlas if DB is empty
-    const totalCount = await Product.countDocuments({});
-    if (totalCount === 0) {
-      console.log('🌱 MongoDB Atlas collection empty. Auto-seeding initial products...');
-      await Product.insertMany(DEFAULT_INITIAL_PRODUCTS);
-    }
-
     if (req.method === 'GET') {
       const { category, featured, active, search, slug } = req.query;
 
@@ -185,12 +178,7 @@ export default async function handler(req, res) {
       }
 
       const baseSlug = title.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
-      let uniqueSlug = baseSlug || 'product';
-      let count = 1;
-      while (await Product.findOne({ slug: uniqueSlug })) {
-        count++;
-        uniqueSlug = `${baseSlug}-${count}`;
-      }
+      const uniqueSlug = `${baseSlug || 'product'}-${Date.now().toString().slice(-4)}`;
 
       const newProduct = new Product({
         title,
@@ -209,7 +197,7 @@ export default async function handler(req, res) {
       });
 
       await newProduct.save();
-      console.log('✅ Created product in MongoDB Atlas via Vercel Function:', newProduct.title);
+      console.log('✅ Created product in MongoDB Atlas via Vercel Function:', newProduct.title, newProduct.slug);
       return res.status(201).json({ success: true, product: newProduct });
     }
 
@@ -241,6 +229,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   } catch (error) {
     console.error('MongoDB API Error:', error);
-    return res.status(200).json(DEFAULT_INITIAL_PRODUCTS);
+    return res.status(500).json({ success: false, error: error.message });
   }
 }
