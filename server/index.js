@@ -19,13 +19,11 @@ mongoose.connect(MONGODB_URI)
 
 // Schemas & Models
 const OrderSchema = new mongoose.Schema({
-  templateTitle: String,
-  templateSlug: String,
-  price: String,
   customerName: String,
   customerPhone: String,
-  recipientName: String,
-  status: { type: String, default: 'Pending' },
+  templateTitle: String,
+  price: String,
+  status: { type: String, default: 'Pending WhatsApp' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -43,15 +41,38 @@ const ProjectSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const ProductSchema = new mongoose.Schema({
+  title: String,
+  slug: String,
+  category: String,
+  price: String,
+  originalPrice: String,
+  discount: String,
+  image: String,
+  description: String,
+  status: { type: String, default: 'Active' },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const Order = mongoose.model('Order', OrderSchema);
 const Project = mongoose.model('Project', ProjectSchema);
+const Product = mongoose.model('Product', ProductSchema);
 
 // API Endpoints
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Cutiepage MongoDB Backend API is running' });
 });
 
-// Orders API
+// ORDERS API (CRUD)
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/orders', async (req, res) => {
   try {
     const newOrder = new Order(req.body);
@@ -62,16 +83,54 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-app.get('/api/orders', async (req, res) => {
+app.delete('/api/orders/:id', async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Order deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Projects API
+app.put('/api/orders/:id', async (req, res) => {
+  try {
+    const updated = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, order: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PRODUCTS API (CRUD)
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/products', async (req, res) => {
+  try {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+    res.status(201).json({ success: true, product: newProduct });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PROJECTS API
 app.post('/api/projects', async (req, res) => {
   try {
     const project = await Project.findOneAndUpdate(
