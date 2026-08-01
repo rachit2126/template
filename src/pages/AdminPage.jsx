@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, Users, Eye, TrendingUp, Search, CheckCircle, 
   MessageCircle, ExternalLink, ShieldCheck, Lock, RefreshCw, 
-  Database, Plus, Trash2, ArrowUpRight 
+  Database, Plus, Trash2, ArrowUpRight, Edit3, Settings, DollarSign
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -12,10 +12,26 @@ export default function AdminPage() {
   const [adminPasscode, setAdminPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState('orders'); // orders, projects, templates
   const [searchQuery, setSearchQuery] = useState('');
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+
+  // New Order Modal state
+  const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [newCustomerPhone, setNewCustomerPhone] = useState('');
+  const [newTemplateTitle, setNewTemplateTitle] = useState('Sweet Birthday');
+  const [newPrice, setNewPrice] = useState('₹79 INR');
+
+  // Editable Templates state
+  const [templatesList, setTemplatesList] = useState([
+    { id: 'sweet-birthday', title: 'Sweet Birthday', price: '₹79', discount: '81% OFF', status: 'Active' },
+    { id: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', price: '₹999', discount: 'SAVE ₹1,584', status: 'Active' },
+    { id: 'friendship-day', title: 'Friendship Day', price: '₹309', discount: '50% OFF', status: 'Active' },
+    { id: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', price: '₹399', discount: '50% OFF', status: 'Active' },
+    { id: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', price: '₹449', discount: 'BESTSELLER', status: 'Active' }
+  ]);
 
   useEffect(() => {
     fetchOrders();
@@ -95,13 +111,43 @@ export default function AdminPage() {
     window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
   };
 
+  const toggleOrderStatus = (orderId) => {
+    setOrders(prev => prev.map(ord => {
+      if (ord._id === orderId) {
+        const nextStatus = ord.status === 'Completed' ? 'Pending WhatsApp' : 'Completed';
+        return { ...ord, status: nextStatus };
+      }
+      return ord;
+    }));
+  };
+
+  const handleAddOrder = (e) => {
+    e.preventDefault();
+    if (!newCustomerName || !newCustomerPhone) return;
+
+    const newOrd = {
+      _id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+      customerName: newCustomerName,
+      customerPhone: newCustomerPhone,
+      templateTitle: newTemplateTitle,
+      price: newPrice,
+      status: 'Pending WhatsApp',
+      createdAt: new Date().toISOString()
+    };
+
+    setOrders([newOrd, ...orders]);
+    setNewCustomerName('');
+    setNewCustomerPhone('');
+    setShowAddOrderModal(false);
+  };
+
   const hostedProjects = [
-    { id: 'ananya-anniversary-demo', recipient: 'Ananya', template: 'Romantic Sky Lanterns', views: 420, pin: '1234', created: '2026-07-28' },
+    { id: 'ananya-anniversary-demo', recipient: 'Roshni', template: 'Romantic Sky Lanterns', views: 420, pin: '1234', created: '2026-07-28' },
     { id: 'rahul-birthday', recipient: 'Rahul', template: 'Sweet Birthday', views: 142, pin: 'None', created: '2026-07-30' },
     { id: 'sneha-friendship', recipient: 'Sneha', template: 'Friendship Day', views: 89, pin: '9988', created: '2026-08-01' }
   ];
 
-  // Admin Login Screen without passcode hint in placeholder or error text
+  // Admin Login Screen
   if (!isAuthenticated) {
     return (
       <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 font-['Plus_Jakarta_Sans'] text-left">
@@ -147,7 +193,7 @@ export default function AdminPage() {
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold shadow-md text-xl">
             👑
           </div>
           <div>
@@ -157,22 +203,28 @@ export default function AdminPage() {
                 MongoDB Live 🍃
               </span>
             </div>
-            <p className="text-xs text-slate-600 font-medium">Manage orders, user surprise pages, and live MongoDB Atlas data.</p>
+            <p className="text-xs text-slate-600 font-medium">Manage customer orders, live hosted surprise pages, and catalog pricing.</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button 
+            onClick={() => setShowAddOrderModal(true)}
+            className="btn-primary text-xs py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1.5 shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Add Order
+          </button>
+          <button 
             onClick={fetchOrders}
             className="btn-secondary text-xs py-2 px-4 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 flex items-center gap-1.5 font-bold"
           >
-            <RefreshCw className="w-3.5 h-3.5" /> Refresh Data
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </button>
           <button 
             onClick={() => setIsAuthenticated(false)}
             className="btn-secondary text-xs py-2 px-4 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold"
           >
-            Logout Admin
+            Logout
           </button>
         </div>
       </div>
@@ -234,6 +286,12 @@ export default function AdminPage() {
         >
           Live Hosted Pages ({hostedProjects.length})
         </button>
+        <button 
+          onClick={() => setActiveTab('templates')}
+          className={`pb-3 transition-colors border-b-2 ${activeTab === 'templates' ? 'border-purple-600 text-purple-600' : 'border-transparent text-slate-600 hover:text-slate-900'}`}
+        >
+          Templates Catalog ({templatesList.length})
+        </button>
       </div>
 
       {/* TAB 1: Customer Orders */}
@@ -276,11 +334,14 @@ export default function AdminPage() {
                     <td className="py-4 px-4 font-semibold text-purple-700">{ord.templateTitle}</td>
                     <td className="py-4 px-4 font-black text-slate-900">{ord.price}</td>
                     <td className="py-4 px-4">
-                      <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
-                        ord.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {ord.status}
-                      </span>
+                      <button
+                        onClick={() => toggleOrderStatus(ord._id)}
+                        className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer transition-all ${
+                          ord.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                        }`}
+                      >
+                        {ord.status} ⚡
+                      </button>
                     </td>
                     <td className="py-4 px-4 text-right">
                       <button 
@@ -337,6 +398,126 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: Templates Catalog */}
+      {activeTab === 'templates' && (
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[11px]">
+                  <th className="py-3 px-4">Template Title</th>
+                  <th className="py-3 px-4">Price</th>
+                  <th className="py-3 px-4">Discount Badge</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">View</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {templatesList.map((t) => (
+                  <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-4 px-4 font-bold text-slate-900">{t.title}</td>
+                    <td className="py-4 px-4 font-black text-purple-700">{t.price}</td>
+                    <td className="py-4 px-4">
+                      <span className="text-[10px] font-extrabold bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full">
+                        {t.discount}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                        {t.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <button 
+                        onClick={() => navigate(`/products/${t.id}`)}
+                        className="btn-secondary text-xs py-1.5 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 ml-auto flex items-center gap-1 font-bold"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" /> Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Add Order Modal */}
+      {showAddOrderModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 p-6 rounded-3xl max-w-md w-full space-y-4 shadow-2xl animate-fadeIn">
+            <h3 className="text-lg font-extrabold text-slate-900 font-['Outfit']">Add New Customer Order</h3>
+            
+            <form onSubmit={handleAddOrder} className="space-y-3 text-xs font-bold text-slate-700">
+              <div className="space-y-1">
+                <label>Customer Name</label>
+                <input 
+                  type="text" 
+                  value={newCustomerName}
+                  onChange={(e) => setNewCustomerName(e.target.value)}
+                  placeholder="e.g. Roshni"
+                  required
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label>Customer Phone (WhatsApp)</label>
+                <input 
+                  type="text" 
+                  value={newCustomerPhone}
+                  onChange={(e) => setNewCustomerPhone(e.target.value)}
+                  placeholder="e.g. +91 91190 55155"
+                  required
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label>Template Title</label>
+                <select 
+                  value={newTemplateTitle}
+                  onChange={(e) => setNewTemplateTitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-600"
+                >
+                  <option>Sweet Birthday</option>
+                  <option>Cutie Pack (All 17 Templates)</option>
+                  <option>Romantic Sky Lanterns</option>
+                  <option>Friendship Day</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label>Price INR</label>
+                <input 
+                  type="text" 
+                  value={newPrice}
+                  onChange={(e) => setNewPrice(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-600"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddOrderModal(false)}
+                  className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100 text-slate-700"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="btn-primary py-2 px-5 text-xs font-bold bg-purple-600 text-white"
+                >
+                  Save Order
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
