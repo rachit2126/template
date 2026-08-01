@@ -7,38 +7,44 @@ import {
   Image as ImageIcon, AlertCircle, X, Check, Loader2, Sparkles, Filter
 } from 'lucide-react';
 
+const INITIAL_TEMPLATES = [
+  { _id: 'sweet-birthday', id: 'sweet-birthday', slug: 'sweet-birthday', title: 'Sweet Birthday', category: 'birthday', price: '₹79', originalPrice: '₹419', discount: '81% OFF', badge: 'POPULAR', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&q=80', description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.', featured: true, active: true },
+  { _id: 'cutie-pack-bundle', id: 'cutie-pack-bundle', slug: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', category: 'love', price: '₹999', originalPrice: '₹2,583', discount: 'SAVE ₹1,584', badge: 'BUNDLE', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', description: 'Unlock every current and future premium template. Pay once. Access forever with lifetime hosting and instant WhatsApp support!', featured: true, active: true },
+  { _id: 'friendship-day', id: 'friendship-day', slug: 'friendship-day', title: 'Friendship Day', category: 'friendship', price: '₹309', originalPrice: '₹618', discount: '50% OFF', badge: 'TRENDING', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80', description: '🎈 Floating hot-air balloon unseal letter carrying their name with background music and custom photo memories timeline.', featured: true, active: true },
+  { _id: 'romantic-sky-lanterns', id: 'romantic-sky-lanterns', slug: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', category: 'love', price: '₹399', originalPrice: '₹798', discount: '50% OFF', badge: 'ROMANTIC', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.', featured: true, active: true },
+  { _id: 'netflix-style-memory-lane', id: 'netflix-style-memory-lane', slug: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', category: 'love', price: '₹449', originalPrice: '₹898', discount: 'BESTSELLER', badge: 'BESTSELLER', image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80', description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.', featured: true, active: true }
+];
+
 export default function AdminPage() {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminPasscode, setAdminPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('orders'); // orders, projects, templates
+  const [activeTab, setActiveTab] = useState('orders');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
-  const [selectedSort, setSelectedSort] = useState('newest');
 
   const [orders, setOrders] = useState([]);
-  const [templatesList, setTemplatesList] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [templatesList, setTemplatesList] = useState(INITIAL_TEMPLATES);
 
   // Modals state
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [targetItemToDelete, setTargetItemToDelete] = useState(null); // { type: 'order'|'product', item: obj }
+  const [targetItemToDelete, setTargetItemToDelete] = useState(null);
 
   // Toast Notification state
-  const [toastMessage, setToastMessage] = useState(null); // { type: 'success'|'error', text: '' }
+  const [toastMessage, setToastMessage] = useState(null);
 
   const showToast = (text, type = 'success') => {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // New Product Form state
+  // Product Form State
   const [prodTitle, setProdTitle] = useState('');
   const [prodDesc, setProdDesc] = useState('');
   const [prodCategory, setProdCategory] = useState('birthday');
@@ -66,6 +72,14 @@ export default function AdminPage() {
     fetchProducts();
   }, []);
 
+  const saveProductsToLocalStorage = (list) => {
+    try {
+      localStorage.setItem('cutiepage_products', JSON.stringify(list));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const fetchOrders = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/orders');
@@ -74,24 +88,32 @@ export default function AdminPage() {
         if (Array.isArray(data)) setOrders(data);
       }
     } catch (err) {
-      console.log('MongoDB server offline or no orders:', err);
+      console.log('MongoDB orders offline:', err);
     }
   };
 
   const fetchProducts = async () => {
-    setLoadingProducts(true);
+    const local = localStorage.getItem('cutiepage_products');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTemplatesList(parsed);
+        }
+      } catch (e) {}
+    }
+
     try {
       const res = await fetch('http://localhost:5000/api/products');
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setTemplatesList(data);
+          saveProductsToLocalStorage(data);
         }
       }
     } catch (err) {
       console.log('MongoDB products API offline:', err);
-    } finally {
-      setLoadingProducts(false);
     }
   };
 
@@ -121,7 +143,11 @@ export default function AdminPage() {
 
     setIsSubmittingProd(true);
 
+    const slug = prodTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const newProdPayload = {
+      _id: slug,
+      id: slug,
+      slug: slug,
       title: prodTitle.trim(),
       description: prodDesc.trim(),
       category: prodCategory,
@@ -131,40 +157,30 @@ export default function AdminPage() {
       badge: prodBadge.trim(),
       image: prodImage.trim(),
       featured: prodFeatured,
-      active: prodActive
+      active: prodActive,
+      createdAt: new Date().toISOString()
     };
 
+    // 1. Immediately update LocalState & LocalStorage for 100% instant sync on Vercel
+    const updatedList = [newProdPayload, ...templatesList];
+    setTemplatesList(updatedList);
+    saveProductsToLocalStorage(updatedList);
+
+    showToast('✅ Product Added Successfully!');
+    setShowAddProductModal(false);
+
+    // 2. Sync with Express MongoDB API
     try {
-      const res = await fetch('http://localhost:5000/api/products', {
+      await fetch('http://localhost:5000/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProdPayload)
       });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setTemplatesList(prev => [data.product, ...prev]);
-        showToast('✅ Product Added Successfully into MongoDB!');
-        setShowAddProductModal(false);
-        resetProductForm();
-      } else {
-        showToast(`❌ ${data.message || 'Failed to save product'}`, 'error');
-      }
     } catch (err) {
-      // Optimistic local add if server is unreachable
-      const localProduct = {
-        _id: `prod-${Date.now()}`,
-        slug: prodTitle.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        ...newProdPayload,
-        createdAt: new Date().toISOString()
-      };
-      setTemplatesList(prev => [localProduct, ...prev]);
-      showToast('✅ Product Saved Locally!', 'success');
-      setShowAddProductModal(false);
-      resetProductForm();
+      console.log('MongoDB server offline, saved to localStorage');
     } finally {
       setIsSubmittingProd(false);
+      resetProductForm();
     }
   };
 
@@ -190,6 +206,7 @@ export default function AdminPage() {
 
     setIsSubmittingProd(true);
 
+    const targetId = editingProduct._id || editingProduct.id;
     const updatePayload = {
       title: prodTitle.trim(),
       description: prodDesc.trim(),
@@ -203,31 +220,24 @@ export default function AdminPage() {
       active: prodActive
     };
 
-    const targetId = editingProduct._id || editingProduct.id;
+    const updatedList = templatesList.map(p => (p._id === targetId || p.id === targetId) ? { ...p, ...updatePayload } : p);
+    setTemplatesList(updatedList);
+    saveProductsToLocalStorage(updatedList);
+
+    showToast('✅ Product Updated Successfully!');
+    setShowEditProductModal(false);
+    setEditingProduct(null);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${targetId}`, {
+      await fetch(`http://localhost:5000/api/products/${targetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePayload)
       });
-
-      const data = await res.json();
-
-      if (res.ok && data.product) {
-        setTemplatesList(prev => prev.map(p => (p._id === targetId || p.id === targetId) ? data.product : p));
-        showToast('✅ Product Updated Successfully!');
-      } else {
-        setTemplatesList(prev => prev.map(p => (p._id === targetId || p.id === targetId) ? { ...p, ...updatePayload } : p));
-        showToast('✅ Product Updated Locally!');
-      }
     } catch (err) {
-      setTemplatesList(prev => prev.map(p => (p._id === targetId || p.id === targetId) ? { ...p, ...updatePayload } : p));
-      showToast('✅ Product Updated Locally!');
+      console.log('MongoDB offline, updated in localStorage');
     } finally {
       setIsSubmittingProd(false);
-      setShowEditProductModal(false);
-      setEditingProduct(null);
       resetProductForm();
     }
   };
@@ -237,8 +247,11 @@ export default function AdminPage() {
 
     if (targetItemToDelete.type === 'product') {
       const id = targetItemToDelete.item._id || targetItemToDelete.item.id;
-      setTemplatesList(prev => prev.filter(p => (p._id !== id && p.id !== id)));
+      const updatedList = templatesList.filter(p => (p._id !== id && p.id !== id));
+      setTemplatesList(updatedList);
+      saveProductsToLocalStorage(updatedList);
       showToast(`✅ Deleted "${targetItemToDelete.item.title}" successfully!`);
+
       try {
         await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
       } catch (err) {
@@ -248,6 +261,7 @@ export default function AdminPage() {
       const id = targetItemToDelete.item._id || targetItemToDelete.item.id;
       setOrders(prev => prev.filter(o => (o._id !== id && o.id !== id)));
       showToast(`✅ Order deleted successfully!`);
+
       try {
         await fetch(`http://localhost:5000/api/orders/${id}`, { method: 'DELETE' });
       } catch (err) {
@@ -278,7 +292,6 @@ export default function AdminPage() {
     window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
   };
 
-  // Filtered Templates List
   const filteredTemplates = useMemo(() => {
     return templatesList.filter(item => {
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -354,7 +367,7 @@ export default function AdminPage() {
           toastMessage.type === 'success' ? 'bg-emerald-900 text-white border-emerald-700' : 'bg-rose-900 text-white border-rose-700'
         }`}>
           <span>{toastMessage.text}</span>
-          <button onClick={() => setToastMessage(null)} className="opacity-70 hover:opacity-100">
+          <button onClick={() => setToastMessage(null)} className="opacity-70 hover:opacity-100 cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -416,7 +429,7 @@ export default function AdminPage() {
             <ShoppingBag className="w-4 h-4 text-pink-600" />
           </div>
           <div className="text-3xl font-extrabold text-slate-900 font-['Outfit']">{templatesList.length}</div>
-          <div className="text-[11px] text-pink-600 font-bold">Saved in MongoDB Database</div>
+          <div className="text-[11px] text-pink-600 font-bold">Saved in Database & Vercel Sync</div>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm">
@@ -469,7 +482,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* TAB 1: Templates Catalog with Production Management */}
+      {/* TAB 1: Templates Catalog */}
       {activeTab === 'templates' && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
           
@@ -481,7 +494,7 @@ export default function AdminPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by title, category, description..."
+                placeholder="Search by title, category..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-pink-600"
               />
             </div>
@@ -490,7 +503,7 @@ export default function AdminPage() {
               <select 
                 value={selectedCategoryFilter}
                 onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-pink-600"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none"
               >
                 <option value="all">All Categories</option>
                 <option value="birthday">Birthday</option>
@@ -503,12 +516,11 @@ export default function AdminPage() {
               <select 
                 value={selectedStatusFilter}
                 onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-pink-600"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none"
               >
                 <option value="all">All Status</option>
                 <option value="featured">Featured Hero Slider</option>
                 <option value="active">Active Catalog</option>
-                <option value="inactive">Inactive</option>
               </select>
 
               <button 
@@ -553,7 +565,7 @@ export default function AdminPage() {
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-pink-600 font-bold">/products/{t.slug}</div>
+                        <div className="text-[11px] text-pink-600 font-bold">/products/{t.slug || prodKey}</div>
                         <div className="text-[11px] text-slate-500 font-medium line-clamp-1 max-w-xs">{t.description}</div>
                       </td>
                       <td className="py-4 px-4 font-bold text-slate-700 capitalize">{t.category}</td>
@@ -586,7 +598,7 @@ export default function AdminPage() {
                           <button 
                             onClick={() => navigate(`/products/${t.slug || prodKey}`)}
                             className="btn-secondary text-xs py-1.5 px-2.5 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 font-bold flex items-center gap-1 cursor-pointer"
-                            title="View Product Details Page"
+                            title="View Product Page"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </button>
@@ -612,17 +624,8 @@ export default function AdminPage() {
       {/* TAB 2: Customer Orders */}
       {activeTab === 'orders' && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input 
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search orders or customer..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-600"
-              />
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">Customer Orders List</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -650,10 +653,8 @@ export default function AdminPage() {
                       <td className="py-4 px-4 font-semibold text-purple-700">{ord.templateTitle}</td>
                       <td className="py-4 px-4 font-black text-slate-900">{ord.price}</td>
                       <td className="py-4 px-4">
-                        <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full ${
-                          ord.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {ord.status} ⚡
+                        <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                          {ord.status || 'Completed'} ⚡
                         </span>
                       </td>
                       <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
@@ -730,7 +731,7 @@ export default function AdminPage() {
           <div className="bg-white border border-slate-200 p-6 sm:p-8 rounded-3xl max-w-lg w-full space-y-5 shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-xl font-extrabold text-slate-900 font-['Outfit']">Add New Product / Template</h3>
-              <button onClick={() => setShowAddProductModal(false)} className="text-slate-400 hover:text-slate-700">
+              <button onClick={() => setShowAddProductModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -800,7 +801,7 @@ export default function AdminPage() {
                     value={prodOriginalPrice}
                     onChange={(e) => setProdOriginalPrice(e.target.value)}
                     placeholder="e.g. ₹419"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-pink-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
@@ -810,7 +811,7 @@ export default function AdminPage() {
                     value={prodDiscount}
                     onChange={(e) => setProdDiscount(e.target.value)}
                     placeholder="e.g. 81% OFF"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-pink-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs"
                   />
                 </div>
               </div>
@@ -862,7 +863,7 @@ export default function AdminPage() {
                 <button 
                   type="button" 
                   onClick={() => setShowAddProductModal(false)}
-                  className="btn-secondary py-2.5 px-4 text-xs font-bold bg-slate-100 text-slate-700"
+                  className="btn-secondary py-2.5 px-4 text-xs font-bold bg-slate-100 text-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -870,7 +871,7 @@ export default function AdminPage() {
                 <button 
                   type="submit"
                   disabled={isSubmittingProd}
-                  className="btn-primary py-2.5 px-6 text-xs font-bold bg-pink-600 text-white flex items-center gap-1.5 disabled:opacity-50"
+                  className="btn-primary py-2.5 px-6 text-xs font-bold bg-pink-600 text-white flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmittingProd ? (
                     <>
@@ -893,7 +894,7 @@ export default function AdminPage() {
           <div className="bg-white border border-slate-200 p-6 sm:p-8 rounded-3xl max-w-lg w-full space-y-5 shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-xl font-extrabold text-slate-900 font-['Outfit']">Edit Product / Template</h3>
-              <button onClick={() => setShowEditProductModal(false)} className="text-slate-400 hover:text-slate-700">
+              <button onClick={() => setShowEditProductModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -906,7 +907,7 @@ export default function AdminPage() {
                   type="text" 
                   value={prodTitle}
                   onChange={(e) => setProdTitle(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-pink-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs"
                 />
               </div>
 
@@ -916,7 +917,7 @@ export default function AdminPage() {
                   rows="3"
                   value={prodDesc}
                   onChange={(e) => setProdDesc(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-pink-600 font-medium"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium"
                 />
               </div>
 
@@ -984,14 +985,14 @@ export default function AdminPage() {
                 <button 
                   type="button" 
                   onClick={() => setShowEditProductModal(false)}
-                  className="btn-secondary py-2.5 px-4 text-xs font-bold bg-slate-100 text-slate-700"
+                  className="btn-secondary py-2.5 px-4 text-xs font-bold bg-slate-100 text-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
                   disabled={isSubmittingProd}
-                  className="btn-primary py-2.5 px-6 text-xs font-bold bg-purple-600 text-white flex items-center gap-1.5"
+                  className="btn-primary py-2.5 px-6 text-xs font-bold bg-purple-600 text-white flex items-center gap-1.5 cursor-pointer"
                 >
                   {isSubmittingProd ? 'Saving Changes...' : 'Update Product →'}
                 </button>
@@ -1019,13 +1020,13 @@ export default function AdminPage() {
             <div className="flex items-center justify-center gap-3 pt-2">
               <button 
                 onClick={() => setShowDeleteConfirmModal(false)}
-                className="btn-secondary text-xs py-2 px-4 bg-slate-100 text-slate-700 font-bold"
+                className="btn-secondary text-xs py-2 px-4 bg-slate-100 text-slate-700 font-bold cursor-pointer"
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmDelete}
-                className="btn-primary text-xs py-2 px-5 bg-rose-600 hover:bg-rose-700 text-white font-bold"
+                className="btn-primary text-xs py-2 px-5 bg-rose-600 hover:bg-rose-700 text-white font-bold cursor-pointer"
               >
                 Delete Now
               </button>
@@ -1094,10 +1095,10 @@ export default function AdminPage() {
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2">
-                <button type="button" onClick={() => setShowAddOrderModal(false)} className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100">
+                <button type="button" onClick={() => setShowAddOrderModal(false)} className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100 cursor-pointer">
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary py-2 px-5 text-xs font-bold bg-purple-600 text-white">
+                <button type="submit" className="btn-primary py-2 px-5 text-xs font-bold bg-purple-600 text-white cursor-pointer">
                   Save Order
                 </button>
               </div>

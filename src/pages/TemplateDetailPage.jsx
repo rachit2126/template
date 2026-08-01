@@ -36,6 +36,36 @@ export default function TemplateDetailPage() {
   }, [slug]);
 
   const fetchProductDetail = async (productSlug) => {
+    // 1. Try LocalStorage
+    const local = localStorage.getItem('cutiepage_products');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        const match = parsed.find(p => p.slug === productSlug || p._id === productSlug || p.id === productSlug);
+        if (match) {
+          setTemplate({
+            title: match.title,
+            category: match.category || 'love',
+            rating: 5.0,
+            reviewsCount: 128,
+            priceINR: `${match.price} INR`,
+            originalPriceINR: match.originalPrice || '',
+            discountBadge: match.discount || 'SPECIAL',
+            image: match.image || 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
+            demoSlug: match.slug || productSlug,
+            description: match.description || 'A cute surprise page they will never forget.',
+            featuresList: [
+              'Interactive unseal note animation',
+              'Photo memory gallery album',
+              'Autoplay romantic song music player',
+              'Printable QR code & private share link'
+            ]
+          });
+        }
+      } catch (e) {}
+    }
+
+    // 2. Try API
     try {
       const res = await fetch(`http://localhost:5000/api/products/${productSlug}`);
       if (res.ok) {

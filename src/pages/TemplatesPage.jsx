@@ -2,87 +2,118 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Star, Crown, MessageCircle } from 'lucide-react';
 
+const DEFAULT_TEMPLATES = [
+  {
+    isBundle: true,
+    slug: 'cutie-pack-bundle',
+    title: 'Cutie Pack',
+    category: 'love',
+    badge: 'BUNDLE',
+    subtitle: 'Get all 17 templates just for ₹999, lifetime access.',
+    price: '₹999',
+    originalPrice: '₹2,583',
+    saveBadge: 'SAVE ₹1,584',
+    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+    description: 'Unlock every premium template. Pay once. Access forever. Includes all future templates released!',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'sweet-birthday',
+    title: 'Sweet Birthday',
+    category: 'birthday',
+    rating: 5.0,
+    reviews: 57,
+    price: '₹79',
+    originalPrice: '₹419',
+    discountBadge: '81% OFF',
+    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+    description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'friendship-day',
+    title: 'Friendship Day Special',
+    category: 'friendship',
+    rating: 5.0,
+    reviews: 63,
+    price: '₹309',
+    originalPrice: '₹618',
+    discountBadge: 'FLAT 50% OFF',
+    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
+    description: '🎈 They tap the link and a hot-air balloon floats up carrying a letter with their name on it. Then your song starts, and the page unfolds...',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'romantic-sky-lanterns',
+    title: 'Romantic Sky Lanterns',
+    category: 'love',
+    rating: 4.9,
+    reviews: 420,
+    price: '₹399',
+    originalPrice: '₹798',
+    discountBadge: 'FLAT 50% OFF',
+    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+    description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.',
+    featured: true,
+    active: true
+  },
+  {
+    slug: 'netflix-style-memory-lane',
+    title: 'Netflix Style Love Story',
+    category: 'love',
+    rating: 5.0,
+    reviews: 890,
+    price: '₹449',
+    originalPrice: '₹898',
+    discountBadge: 'BESTSELLER',
+    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
+    description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.',
+    featured: true,
+    active: true
+  }
+];
+
 export default function TemplatesPage() {
   const navigate = useNavigate();
   const WHATSAPP_NUMBER = '919119055155';
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [products, setProducts] = useState([
-    {
-      isBundle: true,
-      slug: 'cutie-pack-bundle',
-      title: 'Cutie Pack',
-      category: 'love',
-      badge: 'BUNDLE',
-      subtitle: 'Get all 17 templates just for ₹999, lifetime access.',
-      price: '₹999',
-      originalPrice: '₹2,583',
-      saveBadge: 'SAVE ₹1,584',
-      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
-      description: 'Unlock every premium template. Pay once. Access forever. Includes all future templates released!'
-    },
-    {
-      slug: 'sweet-birthday',
-      title: 'Sweet Birthday',
-      category: 'birthday',
-      rating: 5.0,
-      reviews: 57,
-      price: '₹79',
-      discountBadge: '81% OFF',
-      image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
-      description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.'
-    },
-    {
-      slug: 'friendship-day',
-      title: 'Friendship Day Special',
-      category: 'friendship',
-      rating: 5.0,
-      reviews: 63,
-      price: '₹309',
-      discountBadge: 'FLAT 50% OFF',
-      image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
-      description: '🎈 They tap the link and a hot-air balloon floats up carrying a letter with their name on it. Then your song starts, and the page unfolds...'
-    },
-    {
-      slug: 'romantic-sky-lanterns',
-      title: 'Romantic Sky Lanterns',
-      category: 'love',
-      rating: 4.9,
-      reviews: 420,
-      price: '₹399',
-      discountBadge: 'FLAT 50% OFF',
-      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
-      description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.'
-    },
-    {
-      slug: 'netflix-style-memory-lane',
-      title: 'Netflix Style Love Story',
-      category: 'love',
-      rating: 5.0,
-      reviews: 890,
-      price: '₹449',
-      discountBadge: 'BESTSELLER',
-      image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
-      description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.'
-    }
-  ]);
+  const [products, setProducts] = useState(DEFAULT_TEMPLATES);
 
   useEffect(() => {
-    fetchActiveProducts();
+    loadProducts();
   }, []);
 
-  const fetchActiveProducts = async () => {
+  const loadProducts = async () => {
+    // 1. Try reading from LocalStorage first for instant Vercel sync
+    const localData = localStorage.getItem('cutiepage_products');
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setProducts(parsed.filter(p => p.active !== false));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // 2. Try fetching from MongoDB API
     try {
       const res = await fetch('http://localhost:5000/api/products?active=true');
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setProducts(data);
+          localStorage.setItem('cutiepage_products', JSON.stringify(data));
         }
       }
     } catch (err) {
-      console.log('MongoDB catalog API offline:', err);
+      console.log('MongoDB catalog API offline, using local storage products');
     }
   };
 
@@ -236,7 +267,7 @@ export default function TemplatesPage() {
                           <Crown className="w-3 h-3 text-amber-300" /> BUNDLE
                         </span>
                         <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
-                          {item.discount || item.saveBadge || 'SAVE ₹1,584'}
+                          {item.discount || item.discountBadge || item.saveBadge || 'SAVE ₹1,584'}
                         </span>
                       </div>
 

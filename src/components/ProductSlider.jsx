@@ -2,71 +2,86 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Star, MessageCircle, ArrowRight, Sparkles } from 'lucide-react';
 
+const DEFAULT_SLIDER = [
+  {
+    slug: 'sweet-birthday',
+    title: 'Sweet Birthday',
+    category: 'birthday',
+    rating: 5.0,
+    reviews: 57,
+    price: '₹79',
+    originalPrice: '₹419',
+    discountBadge: '81% OFF',
+    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+    description: '🎉 A cute little birthday surprise they will never forget with song autoplay & custom photos.',
+    featured: true
+  },
+  {
+    slug: 'friendship-day',
+    title: 'Friendship Day Special',
+    category: 'friendship',
+    rating: 5.0,
+    reviews: 63,
+    price: '₹309',
+    originalPrice: '₹618',
+    discountBadge: 'FLAT 50% OFF',
+    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
+    description: '🎈 Floating hot-air balloon unseal letter carrying their name with background music.',
+    featured: true
+  },
+  {
+    slug: 'romantic-sky-lanterns',
+    title: 'Romantic Sky Lanterns',
+    category: 'love',
+    rating: 4.9,
+    reviews: 420,
+    price: '₹399',
+    originalPrice: '₹798',
+    discountBadge: 'FLAT 50% OFF',
+    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+    description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music.',
+    featured: true
+  },
+  {
+    slug: 'netflix-style-memory-lane',
+    title: 'Netflix Style Love Story',
+    category: 'love',
+    rating: 5.0,
+    reviews: 890,
+    price: '₹449',
+    originalPrice: '₹898',
+    discountBadge: 'BESTSELLER',
+    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
+    description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, and subtitles.',
+    featured: true
+  }
+];
+
 export default function ProductSlider() {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
   const WHATSAPP_NUMBER = '919119055155';
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [products, setProducts] = useState([
-    {
-      slug: 'sweet-birthday',
-      title: 'Sweet Birthday',
-      category: 'birthday',
-      rating: 5.0,
-      reviews: 57,
-      price: '₹79',
-      originalPrice: '₹419',
-      discountBadge: '81% OFF',
-      image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
-      description: '🎉 A cute little birthday surprise they will never forget with song autoplay & custom photos.',
-      featured: true
-    },
-    {
-      slug: 'friendship-day',
-      title: 'Friendship Day Special',
-      category: 'friendship',
-      rating: 5.0,
-      reviews: 63,
-      price: '₹309',
-      originalPrice: '₹618',
-      discountBadge: 'FLAT 50% OFF',
-      image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
-      description: '🎈 Floating hot-air balloon unseal letter carrying their name with background music.',
-      featured: true
-    },
-    {
-      slug: 'romantic-sky-lanterns',
-      title: 'Romantic Sky Lanterns',
-      category: 'love',
-      rating: 4.9,
-      reviews: 420,
-      price: '₹399',
-      originalPrice: '₹798',
-      discountBadge: 'FLAT 50% OFF',
-      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
-      description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music.',
-      featured: true
-    },
-    {
-      slug: 'netflix-style-memory-lane',
-      title: 'Netflix Style Love Story',
-      category: 'love',
-      rating: 5.0,
-      reviews: 890,
-      price: '₹449',
-      originalPrice: '₹898',
-      discountBadge: 'BESTSELLER',
-      image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
-      description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, and subtitles.',
-      featured: true
-    }
-  ]);
+  const [products, setProducts] = useState(DEFAULT_SLIDER);
 
   useEffect(() => {
     fetchFeaturedProducts();
   }, []);
 
   const fetchFeaturedProducts = async () => {
+    // 1. Read from localStorage first for Vercel instant sync
+    const localData = localStorage.getItem('cutiepage_products');
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const feat = parsed.filter(p => p.featured === true);
+          if (feat.length > 0) setProducts(feat);
+        }
+      } catch (e) {}
+    }
+
+    // 2. Try fetching from MongoDB API
     try {
       const res = await fetch('http://localhost:5000/api/products?featured=true');
       if (res.ok) {
@@ -76,7 +91,7 @@ export default function ProductSlider() {
         }
       }
     } catch (err) {
-      console.log('MongoDB server API offline for featured slider:', err);
+      console.log('MongoDB server API offline for featured slider');
     }
   };
 
