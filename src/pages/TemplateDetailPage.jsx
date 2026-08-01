@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Star, ExternalLink, Zap, QrCode, Infinity, Check, ArrowLeft, MessageCircle, Heart, Lock, ShieldCheck, Music, Sparkles } from 'lucide-react';
 
@@ -10,100 +10,60 @@ export default function TemplateDetailPage() {
   const [activeTab, setActiveTab] = useState('details');
   const [timeLeft, setTimeLeft] = useState('13:52:47');
 
-  const templatesData = {
-    'sweet-birthday': {
-      title: 'Sweet Birthday',
-      category: 'birthday',
-      rating: 5.0,
-      reviewsCount: 57,
-      priceINR: '₹79 INR',
-      originalPriceINR: '₹419',
-      discountBadge: '81% OFF',
-      image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
-      demoSlug: 'sweet-birthday-demo',
-      description: 'A cute little surprise they will never forget! Features custom birthday wishes, photo slider, romantic background music player, and instant QR code.',
-      featuresList: [
-        'Interactive birthday unseal note with customizable name',
-        'High-definition photo album gallery (up to 10 photos)',
-        'Autoplay romantic acoustic song background music',
-        'Printable high-resolution QR code for physical gifts',
-        '100% private & protected with optional 4-digit PIN lock'
-      ]
-    },
-    'friendship-day': {
-      title: 'Friendship Day',
-      category: 'friendship',
-      rating: 5.0,
-      reviewsCount: 63,
-      priceINR: '₹309 INR',
-      originalPriceINR: '₹618',
-      discountBadge: '50% OFF',
-      image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80',
-      demoSlug: 'friendship-demo',
-      description: 'They tap the link and a hot-air balloon floats up carrying a letter with their name on it. Then your song starts, and the page unfolds with memories, custom photos, and secret wishes.',
-      featuresList: [
-        'Floating hot-air balloon unseal animation',
-        'Memory timeline of your best moments together',
-        'Custom voice note or song player integration',
-        'Instant private web link with lifetime validity'
-      ]
-    },
-    'romantic-sky-lanterns': {
-      title: 'Romantic Sky Lanterns',
-      category: 'love',
-      rating: 4.9,
-      reviewsCount: 420,
-      priceINR: '₹399 INR',
-      originalPriceINR: '₹798',
-      discountBadge: '50% OFF',
-      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80',
-      demoSlug: 'sky-lanterns-demo',
-      description: 'Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.',
-      featuresList: [
-        'Floating lantern particles background',
-        'Unseal letter with handwritten cursive typography',
-        'Polaroid memory photo wall slider',
-        'Background romantic piano melody player'
-      ]
-    },
-    'cutie-pack-bundle': {
-      title: 'Cutie Pack (All 17 Templates)',
-      category: 'love',
-      rating: 5.0,
-      reviewsCount: 1200,
-      priceINR: '₹999 INR',
-      originalPriceINR: '₹2,583',
-      discountBadge: 'SAVE ₹1,584',
-      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80',
-      demoSlug: 'ananya-anniversary-demo',
-      description: 'Unlock every current and future premium template with lifetime access. Pay once and use unlimited times for any occasion!',
-      featuresList: [
-        'Access to all 17+ present and future template designs',
-        'Unlimited page creations & instant WhatsApp fulfillment',
-        'No watermarks, no recurring subscriptions, no expiry',
-        'Includes VIP custom domain support & 24/7 assistance'
-      ]
-    }
-  };
-
-  const currentSlug = slug || 'sweet-birthday';
-  const template = templatesData[currentSlug] || {
-    title: currentSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-    category: 'love',
+  const [template, setTemplate] = useState({
+    title: slug ? slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Sweet Birthday',
+    category: 'birthday',
     rating: 5.0,
     reviewsCount: 57,
     priceINR: '₹79 INR',
     originalPriceINR: '₹419',
     discountBadge: '81% OFF',
     image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
-    demoSlug: 'demo',
-    description: 'A cute little surprise page they will never forget! Add your details, hit order, and share the live link or QR code.',
+    demoSlug: 'sweet-birthday-demo',
+    description: 'A cute little surprise page they will never forget! Features custom birthday wishes, photo slider, romantic background music player, and instant QR code.',
     featuresList: [
       'Interactive unseal note animation',
       'Photo memory gallery album',
       'Autoplay romantic song music player',
       'Printable QR code & private share link'
     ]
+  });
+
+  useEffect(() => {
+    if (slug) {
+      fetchProductDetail(slug);
+    }
+  }, [slug]);
+
+  const fetchProductDetail = async (productSlug) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/products/${productSlug}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.title) {
+          setTemplate({
+            title: data.title,
+            category: data.category || 'love',
+            rating: 5.0,
+            reviewsCount: 128,
+            priceINR: `${data.price} INR`,
+            originalPriceINR: data.originalPrice || '',
+            discountBadge: data.discount || 'SPECIAL',
+            image: data.image || 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
+            demoSlug: data.slug || productSlug,
+            description: data.description || 'A cute surprise page they will never forget.',
+            featuresList: [
+              'Interactive unseal note animation',
+              'Photo memory gallery album',
+              'Autoplay romantic song music player',
+              'Printable QR code & private share link'
+            ]
+          });
+        }
+      }
+    } catch (err) {
+      console.log('Product details fetch error:', err);
+    }
   };
 
   const relatedTemplates = [
@@ -130,7 +90,7 @@ export default function TemplateDetailPage() {
         {/* Back Link */}
         <button 
           onClick={() => navigate('/templates')}
-          className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Catalog
         </button>
@@ -193,7 +153,7 @@ export default function TemplateDetailPage() {
             <div className="space-y-3 pt-2">
               <button 
                 onClick={handleOrderWhatsApp}
-                className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <MessageCircle className="w-5 h-5 fill-white text-white" />
                 <span>Order on WhatsApp · {template.priceINR}</span>
@@ -201,7 +161,7 @@ export default function TemplateDetailPage() {
 
               <button 
                 onClick={() => navigate(`/publish/${template.demoSlug}`)}
-                className="w-full py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-all flex items-center justify-center gap-2 border border-slate-200"
+                className="w-full py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-all flex items-center justify-center gap-2 border border-slate-200 cursor-pointer"
               >
                 <span>Take a preview</span>
                 <ExternalLink className="w-4 h-4 text-slate-600" />
@@ -212,10 +172,14 @@ export default function TemplateDetailPage() {
             <div className="pt-4 border-t border-slate-100 space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-extrabold text-slate-900 font-['Outfit']">{template.priceINR}</span>
-                <span className="text-sm text-slate-400 line-through font-semibold">{template.originalPriceINR}</span>
-                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                  {template.discountBadge}
-                </span>
+                {template.originalPriceINR && (
+                  <span className="text-sm text-slate-400 line-through font-semibold">{template.originalPriceINR}</span>
+                )}
+                {template.discountBadge && (
+                  <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                    {template.discountBadge}
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-2 text-xs font-bold text-purple-600">
@@ -230,7 +194,7 @@ export default function TemplateDetailPage() {
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
                   Made by professionals
-                  <span className="text-slate-500 font-normal">— Designed and animated by real designers. Premium one-of-a-kind page.</span>
+                  <span className="text-slate-500 font-normal">— Designed and animated by real designers.</span>
                 </div>
               </div>
 
@@ -246,15 +210,7 @@ export default function TemplateDetailPage() {
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
                   Feels expensive and personal
-                  <span className="text-slate-500 font-normal">— Looks like it was crafted just for them. Way better than plain cards.</span>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
-                  Fill, publish, share
-                  <span className="text-slate-500 font-normal">— Share the link or printable QR code. That is it.</span>
+                  <span className="text-slate-500 font-normal">— Looks like it was crafted just for them.</span>
                 </div>
               </div>
             </div>
