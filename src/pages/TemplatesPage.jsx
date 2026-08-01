@@ -3,113 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Star, Crown, MessageCircle } from 'lucide-react';
 import { fetchApi } from '../utils/api';
 
-const DEFAULT_TEMPLATES = [
-  {
-    isBundle: true,
-    slug: 'cutie-pack-bundle',
-    title: 'Cutie Pack (All 17 Templates)',
-    category: 'love',
-    badge: 'BUNDLE',
-    subtitle: 'Get all 17 templates just for ₹999, lifetime access.',
-    price: '₹999',
-    originalPrice: '₹2,583',
-    saveBadge: 'SAVE ₹1,584',
-    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
-    description: 'Unlock every current and future premium template. Pay once. Access forever with lifetime hosting and instant WhatsApp support!',
-    featured: true,
-    active: true
-  },
-  {
-    slug: 'sweet-birthday',
-    title: 'Sweet Birthday',
-    category: 'birthday',
-    rating: 5.0,
-    reviews: 57,
-    price: '₹79',
-    originalPrice: '₹419',
-    discountBadge: '81% OFF',
-    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
-    description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.',
-    featured: true,
-    active: true
-  },
-  {
-    slug: 'friendship-day',
-    title: 'Friendship Day Special',
-    category: 'friendship',
-    rating: 5.0,
-    reviews: 63,
-    price: '₹309',
-    originalPrice: '₹618',
-    discountBadge: 'FLAT 50% OFF',
-    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
-    description: '🎈 They tap the link and a hot-air balloon floats up carrying a letter with their name on it. Then your song starts, and the page unfolds...',
-    featured: true,
-    active: true
-  },
-  {
-    slug: 'romantic-sky-lanterns',
-    title: 'Romantic Sky Lanterns',
-    category: 'love',
-    rating: 4.9,
-    reviews: 420,
-    price: '₹399',
-    originalPrice: '₹798',
-    discountBadge: 'FLAT 50% OFF',
-    image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
-    description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.',
-    featured: true,
-    active: true
-  },
-  {
-    slug: 'netflix-style-memory-lane',
-    title: 'Netflix Style Love Story',
-    category: 'love',
-    rating: 5.0,
-    reviews: 890,
-    price: '₹449',
-    originalPrice: '₹898',
-    discountBadge: 'BESTSELLER',
-    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
-    description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.',
-    featured: true,
-    active: true
-  }
-];
-
 export default function TemplatesPage() {
   const navigate = useNavigate();
   const WHATSAPP_NUMBER = '919119055155';
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [products, setProducts] = useState(DEFAULT_TEMPLATES);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     loadProducts();
   }, []);
 
   const loadProducts = async () => {
-    // 1. Fetch fresh production data from Vercel Serverless MongoDB Atlas API (no-store)
+    // Fetch directly from production Vercel Serverless MongoDB Atlas API
     const result = await fetchApi('/api/products');
-    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-      console.log(`[TemplatesPage] Fetched ${result.data.length} fresh products from MongoDB API.`);
+    if (result.success && Array.isArray(result.data)) {
       setProducts(result.data);
-      try {
-        localStorage.setItem('cutiepage_products', JSON.stringify(result.data));
-      } catch (e) {}
-      return;
-    }
-
-    // 2. LocalStorage Fallback only if API fails
-    const localData = localStorage.getItem('cutiepage_products');
-    if (localData) {
-      try {
-        const parsed = JSON.parse(localData);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setProducts(parsed.filter(p => p.active !== false));
-        }
-      } catch (e) {}
     }
   };
 

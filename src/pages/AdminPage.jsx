@@ -8,14 +8,6 @@ import {
 } from 'lucide-react';
 import { fetchApi } from '../utils/api';
 
-const DEFAULT_FALLBACK_PRODUCTS = [
-  { _id: 'cutie-pack-bundle', id: 'cutie-pack-bundle', slug: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', category: 'love', price: '₹999', originalPrice: '₹2,583', discount: 'SAVE ₹1,584', badge: 'BUNDLE', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', description: 'Unlock every current and future premium template. Pay once. Access forever with lifetime hosting and instant WhatsApp support!', featured: true, active: true },
-  { _id: 'sweet-birthday', id: 'sweet-birthday', slug: 'sweet-birthday', title: 'Sweet Birthday', category: 'birthday', price: '₹79', originalPrice: '₹419', discount: '81% OFF', badge: 'POPULAR', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&q=80', description: '🎉 A cute little surprise they will never forget! Add custom photos, wishes, background music, and instant QR code.', featured: true, active: true },
-  { _id: 'friendship-day', id: 'friendship-day', slug: 'friendship-day', title: 'Friendship Day', category: 'friendship', price: '₹309', originalPrice: '₹618', discount: '50% OFF', badge: 'TRENDING', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80', description: '🎈 Floating hot-air balloon unseal letter carrying their name with background music and custom photo memories timeline.', featured: true, active: true },
-  { _id: 'romantic-sky-lanterns', id: 'romantic-sky-lanterns', slug: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', category: 'love', price: '₹399', originalPrice: '₹798', discount: '50% OFF', badge: 'ROMANTIC', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', description: '💖 Flying heart balloons carrying a romantic unseal letter with background piano music, custom polaroid photos & memory timeline.', featured: true, active: true },
-  { _id: 'netflix-style-memory-lane', id: 'netflix-style-memory-lane', slug: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', category: 'love', price: '₹449', originalPrice: '₹898', discount: 'BESTSELLER', badge: 'BESTSELLER', image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80', description: '🎬 Stream your love story like a Netflix movie with episodes, trailers, custom subtitles, and secret message reveals.', featured: true, active: true }
-];
-
 export default function AdminPage() {
   const navigate = useNavigate();
 
@@ -33,7 +25,7 @@ export default function AdminPage() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
 
   const [orders, setOrders] = useState([]);
-  const [templatesList, setTemplatesList] = useState(DEFAULT_FALLBACK_PRODUCTS);
+  const [templatesList, setTemplatesList] = useState([]);
 
   // Modals state
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
@@ -87,11 +79,9 @@ export default function AdminPage() {
 
   const fetchProducts = async () => {
     const result = await fetchApi('/api/products');
-    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-      console.log(`[AdminPage] Loaded ${result.data.length} products from API.`);
+    if (result.success && Array.isArray(result.data)) {
+      console.log(`[AdminPage] Loaded ${result.data.length} products from MongoDB API.`);
       setTemplatesList(result.data);
-    } else {
-      setTemplatesList(DEFAULT_FALLBACK_PRODUCTS);
     }
   };
 
@@ -142,6 +132,8 @@ export default function AdminPage() {
       active: prodActive
     };
 
+    console.log("Saving product", newProdPayload);
+
     try {
       const result = await fetchApi('/api/products', {
         method: 'POST',
@@ -149,21 +141,16 @@ export default function AdminPage() {
       });
 
       if (result.success) {
-        showToast('✅ Product Saved Successfully into Database!');
+        console.log("Saved product", result.data);
+        showToast('✅ Product Saved into MongoDB!');
         await fetchProducts();
       } else {
-        // Local state update fallback
-        const slug = prodTitle.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
-        const localProduct = { _id: slug, id: slug, slug, ...newProdPayload };
-        setTemplatesList(prev => [localProduct, ...prev]);
-        showToast('✅ Product Added to Catalog!');
+        console.error("Error", result.error);
+        showToast(`❌ Error saving product: ${result.error || 'Server Error'}`, 'error');
       }
     } catch (err) {
-      console.error(err);
-      const slug = prodTitle.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
-      const localProduct = { _id: slug, id: slug, slug, ...newProdPayload };
-      setTemplatesList(prev => [localProduct, ...prev]);
-      showToast('✅ Product Added!');
+      console.error("Error", err);
+      showToast(`❌ Exception: ${err.message}`, 'error');
     } finally {
       setIsSubmittingProd(false);
       setShowAddProductModal(false);
@@ -212,10 +199,12 @@ export default function AdminPage() {
         method: 'PUT',
         body: JSON.stringify(updatePayload)
       });
-      showToast('✅ Product Updated!');
-      await fetchProducts();
+      if (result.success) {
+        showToast('✅ Product Updated!');
+        await fetchProducts();
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error", err);
     } finally {
       setIsSubmittingProd(false);
       setShowEditProductModal(false);
@@ -235,8 +224,7 @@ export default function AdminPage() {
         await fetchApi(`/api/products?id=${id}`, { method: 'DELETE' });
         await fetchProducts();
       } catch (err) {
-        console.error(err);
-        setTemplatesList(prev => prev.filter(p => p._id !== id && p.id !== id));
+        console.error("Error", err);
       }
     } else if (targetItemToDelete.type === 'order') {
       const id = targetItemToDelete.item._id || targetItemToDelete.item.id;
@@ -245,7 +233,7 @@ export default function AdminPage() {
         await fetchOrders();
         showToast(`✅ Order deleted successfully!`);
       } catch (err) {
-        console.error(err);
+        console.error("Error", err);
       }
     }
 
