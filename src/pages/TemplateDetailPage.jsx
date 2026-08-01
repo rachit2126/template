@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Star, ExternalLink, Zap, QrCode, Infinity, Check, ArrowLeft, MessageCircle, Heart, Lock, ShieldCheck, Music, Sparkles } from 'lucide-react';
+import { fetchApi } from '../utils/api';
 
 export default function TemplateDetailPage() {
   const { slug } = useParams();
@@ -36,7 +37,32 @@ export default function TemplateDetailPage() {
   }, [slug]);
 
   const fetchProductDetail = async (productSlug) => {
-    // 1. Try LocalStorage
+    // 1. Try production API endpoint (/api/products?slug=...)
+    const result = await fetchApi(`/api/products?slug=${productSlug}`);
+    if (result.success && result.data && result.data.title) {
+      const data = result.data;
+      setTemplate({
+        title: data.title,
+        category: data.category || 'love',
+        rating: 5.0,
+        reviewsCount: 128,
+        priceINR: `${data.price} INR`,
+        originalPriceINR: data.originalPrice || '',
+        discountBadge: data.discount || 'SPECIAL',
+        image: data.image || 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
+        demoSlug: data.slug || productSlug,
+        description: data.description || 'A cute surprise page they will never forget.',
+        featuresList: [
+          'Interactive unseal note animation',
+          'Photo memory gallery album',
+          'Autoplay romantic song music player',
+          'Printable QR code & private share link'
+        ]
+      });
+      return;
+    }
+
+    // 2. Secondary fallback to LocalStorage
     const local = localStorage.getItem('cutiepage_products');
     if (local) {
       try {
@@ -63,36 +89,6 @@ export default function TemplateDetailPage() {
           });
         }
       } catch (e) {}
-    }
-
-    // 2. Try API
-    try {
-      const res = await fetch(`http://localhost:5000/api/products/${productSlug}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.title) {
-          setTemplate({
-            title: data.title,
-            category: data.category || 'love',
-            rating: 5.0,
-            reviewsCount: 128,
-            priceINR: `${data.price} INR`,
-            originalPriceINR: data.originalPrice || '',
-            discountBadge: data.discount || 'SPECIAL',
-            image: data.image || 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
-            demoSlug: data.slug || productSlug,
-            description: data.description || 'A cute surprise page they will never forget.',
-            featuresList: [
-              'Interactive unseal note animation',
-              'Photo memory gallery album',
-              'Autoplay romantic song music player',
-              'Printable QR code & private share link'
-            ]
-          });
-        }
-      }
-    } catch (err) {
-      console.log('Product details fetch error:', err);
     }
   };
 

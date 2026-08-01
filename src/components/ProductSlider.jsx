@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Star, MessageCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { fetchApi } from '../utils/api';
 
 const DEFAULT_SLIDER = [
   {
@@ -69,7 +70,17 @@ export default function ProductSlider() {
   }, []);
 
   const fetchFeaturedProducts = async () => {
-    // 1. Read from localStorage first for Vercel instant sync
+    // Fetch directly from production API endpoint (/api/products?featured=true)
+    const result = await fetchApi('/api/products?featured=true');
+    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+      setProducts(result.data);
+      try {
+        localStorage.setItem('cutiepage_products', JSON.stringify(result.data));
+      } catch (e) {}
+      return;
+    }
+
+    // Secondary fallback to LocalStorage cache
     const localData = localStorage.getItem('cutiepage_products');
     if (localData) {
       try {
@@ -79,19 +90,6 @@ export default function ProductSlider() {
           if (feat.length > 0) setProducts(feat);
         }
       } catch (e) {}
-    }
-
-    // 2. Try fetching from MongoDB API
-    try {
-      const res = await fetch('http://localhost:5000/api/products?featured=true');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
-        }
-      }
-    } catch (err) {
-      console.log('MongoDB server API offline for featured slider');
     }
   };
 
