@@ -37,13 +37,13 @@ export default function AdminPage() {
   const [prodImage, setProdImage] = useState('https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80');
   const [prodDesc, setProdDesc] = useState('');
 
-  // Initial Templates Catalog state
+  // Templates Catalog state
   const [templatesList, setTemplatesList] = useState([
-    { _id: 'sweet-birthday', title: 'Sweet Birthday', category: 'birthday', price: '₹79', originalPrice: '₹419', discount: '81% OFF', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&q=80', status: 'Active' },
-    { _id: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', category: 'love', price: '₹999', originalPrice: '₹2,583', discount: 'SAVE ₹1,584', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', status: 'Active' },
-    { _id: 'friendship-day', title: 'Friendship Day', category: 'friendship', price: '₹309', originalPrice: '₹618', discount: '50% OFF', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80', status: 'Active' },
-    { _id: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', category: 'love', price: '₹399', originalPrice: '₹798', discount: '50% OFF', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', status: 'Active' },
-    { _id: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', category: 'love', price: '₹449', originalPrice: '₹898', discount: 'BESTSELLER', image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80', status: 'Active' }
+    { _id: 'sweet-birthday', id: 'sweet-birthday', title: 'Sweet Birthday', category: 'birthday', price: '₹79', originalPrice: '₹419', discount: '81% OFF', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { _id: 'cutie-pack-bundle', id: 'cutie-pack-bundle', title: 'Cutie Pack (All 17 Templates)', category: 'love', price: '₹999', originalPrice: '₹2,583', discount: 'SAVE ₹1,584', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { _id: 'friendship-day', id: 'friendship-day', title: 'Friendship Day', category: 'friendship', price: '₹309', originalPrice: '₹618', discount: '50% OFF', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { _id: 'romantic-sky-lanterns', id: 'romantic-sky-lanterns', title: 'Romantic Sky Lanterns', category: 'love', price: '₹399', originalPrice: '₹798', discount: '50% OFF', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80', status: 'Active' },
+    { _id: 'netflix-style-memory-lane', id: 'netflix-style-memory-lane', title: 'Netflix Style Love Story', category: 'love', price: '₹449', originalPrice: '₹898', discount: 'BESTSELLER', image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80', status: 'Active' }
   ]);
 
   useEffect(() => {
@@ -57,7 +57,9 @@ export default function AdminPage() {
       const res = await fetch('http://localhost:5000/api/orders');
       if (res.ok) {
         const data = await res.json();
-        setOrders(data);
+        if (data && data.length > 0) {
+          setOrders(data);
+        }
       }
     } catch (err) {
       console.log('MongoDB server offline or no orders:', err);
@@ -97,11 +99,11 @@ export default function AdminPage() {
   };
 
   const toggleOrderStatus = async (orderId) => {
-    const target = orders.find(o => o._id === orderId);
+    const target = orders.find(o => (o._id === orderId || o.id === orderId));
     if (!target) return;
     const nextStatus = target.status === 'Completed' ? 'Pending WhatsApp' : 'Completed';
 
-    setOrders(prev => prev.map(ord => ord._id === orderId ? { ...ord, status: nextStatus } : ord));
+    setOrders(prev => prev.map(ord => (ord._id === orderId || ord.id === orderId) ? { ...ord, status: nextStatus } : ord));
 
     try {
       await fetch(`http://localhost:5000/api/orders/${orderId}`, {
@@ -115,8 +117,8 @@ export default function AdminPage() {
   };
 
   const handleDeleteOrder = async (orderId) => {
-    if (window.confirm(`Delete order ${orderId}?`)) {
-      setOrders(prev => prev.filter(ord => ord._id !== orderId));
+    if (window.confirm(`Delete order?`)) {
+      setOrders(prev => prev.filter(ord => ord._id !== orderId && ord.id !== orderId));
       try {
         await fetch(`http://localhost:5000/api/orders/${orderId}`, { method: 'DELETE' });
       } catch (err) {
@@ -126,8 +128,8 @@ export default function AdminPage() {
   };
 
   const handleDeleteProduct = async (prodId) => {
-    if (window.confirm(`Delete product?`)) {
-      setTemplatesList(prev => prev.filter(t => t._id !== prodId));
+    if (window.confirm(`Are you sure you want to delete this product?`)) {
+      setTemplatesList(prev => prev.filter(t => t._id !== prodId && t.id !== prodId));
       try {
         await fetch(`http://localhost:5000/api/products/${prodId}`, { method: 'DELETE' });
       } catch (err) {
@@ -147,6 +149,8 @@ export default function AdminPage() {
     if (!newCustomerName || !newCustomerPhone) return;
 
     const newOrd = {
+      _id: `ORD-${Date.now().toString().slice(-4)}`,
+      id: `ORD-${Date.now().toString().slice(-4)}`,
       customerName: newCustomerName,
       customerPhone: newCustomerPhone,
       templateTitle: newTemplateTitle,
@@ -164,12 +168,10 @@ export default function AdminPage() {
         const data = await res.json();
         setOrders([data.order, ...orders]);
       } else {
-        const localOrd = { _id: `ORD-${Date.now().toString().slice(-4)}`, ...newOrd };
-        setOrders([localOrd, ...orders]);
+        setOrders([newOrd, ...orders]);
       }
     } catch (err) {
-      const localOrd = { _id: `ORD-${Date.now().toString().slice(-4)}`, ...newOrd };
-      setOrders([localOrd, ...orders]);
+      setOrders([newOrd, ...orders]);
     }
 
     setNewCustomerName('');
@@ -183,6 +185,8 @@ export default function AdminPage() {
 
     const slug = prodSlug || prodTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const newProd = {
+      _id: slug,
+      id: slug,
       title: prodTitle,
       slug: slug,
       category: prodCategory,
@@ -202,14 +206,12 @@ export default function AdminPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setTemplatesList([data.product, ...templatesList]);
+        setTemplatesList([data.product || newProd, ...templatesList]);
       } else {
-        const localProd = { _id: slug, ...newProd };
-        setTemplatesList([localProd, ...templatesList]);
+        setTemplatesList([newProd, ...templatesList]);
       }
     } catch (err) {
-      const localProd = { _id: slug, ...newProd };
-      setTemplatesList([localProd, ...templatesList]);
+      setTemplatesList([newProd, ...templatesList]);
     }
 
     setProdTitle('');
@@ -287,28 +289,28 @@ export default function AdminPage() {
         <div className="flex flex-wrap items-center gap-2.5">
           <button 
             onClick={() => setShowAddOrderModal(true)}
-            className="btn-primary text-xs py-2 px-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1 shadow-sm"
+            className="btn-primary text-xs py-2 px-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1 shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Add Order
           </button>
 
           <button 
             onClick={() => setShowAddProductModal(true)}
-            className="btn-primary text-xs py-2 px-3.5 bg-pink-600 hover:bg-pink-700 text-white font-bold flex items-center gap-1 shadow-sm"
+            className="btn-primary text-xs py-2 px-3.5 bg-pink-600 hover:bg-pink-700 text-white font-bold flex items-center gap-1 shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Add Product
           </button>
 
           <button 
             onClick={fetchOrders}
-            className="btn-secondary text-xs py-2 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 flex items-center gap-1 font-bold"
+            className="btn-secondary text-xs py-2 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 flex items-center gap-1 font-bold cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </button>
           
           <button 
             onClick={() => setIsAuthenticated(false)}
-            className="btn-secondary text-xs py-2 px-3 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold"
+            className="btn-secondary text-xs py-2 px-3 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold cursor-pointer"
           >
             Logout
           </button>
@@ -396,7 +398,7 @@ export default function AdminPage() {
             {orders.length > 0 && (
               <button 
                 onClick={handleClearAllOrders}
-                className="text-xs text-rose-600 hover:text-rose-700 font-bold bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200"
+                className="text-xs text-rose-600 hover:text-rose-700 font-bold bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 cursor-pointer"
               >
                 Clear All Orders
               </button>
@@ -427,43 +429,46 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {orders.map((ord) => (
-                    <tr key={ord._id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-4 px-4 font-bold text-slate-900">{ord._id}</td>
-                      <td className="py-4 px-4">
-                        <div className="font-bold text-slate-900">{ord.customerName}</div>
-                        <div className="text-xs text-slate-500 font-medium">{ord.customerPhone}</div>
-                      </td>
-                      <td className="py-4 px-4 font-semibold text-purple-700">{ord.templateTitle}</td>
-                      <td className="py-4 px-4 font-black text-slate-900">{ord.price}</td>
-                      <td className="py-4 px-4">
-                        <button
-                          onClick={() => toggleOrderStatus(ord._id)}
-                          className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer transition-all ${
-                            ord.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                          }`}
-                        >
-                          {ord.status} ⚡
-                        </button>
-                      </td>
-                      <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => handleWhatsAppContact(ord.customerPhone, ord.templateTitle)}
-                          className="btn-primary text-xs py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
-                        </button>
+                  {orders.map((ord, idx) => {
+                    const orderKey = ord._id || ord.id || `ord-${idx}`;
+                    return (
+                      <tr key={orderKey} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-4 px-4 font-bold text-slate-900">{orderKey}</td>
+                        <td className="py-4 px-4">
+                          <div className="font-bold text-slate-900">{ord.customerName}</div>
+                          <div className="text-xs text-slate-500 font-medium">{ord.customerPhone}</div>
+                        </td>
+                        <td className="py-4 px-4 font-semibold text-purple-700">{ord.templateTitle}</td>
+                        <td className="py-4 px-4 font-black text-slate-900">{ord.price}</td>
+                        <td className="py-4 px-4">
+                          <button
+                            onClick={() => toggleOrderStatus(orderKey)}
+                            className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer transition-all ${
+                              ord.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            }`}
+                          >
+                            {ord.status} ⚡
+                          </button>
+                        </td>
+                        <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => handleWhatsAppContact(ord.customerPhone, ord.templateTitle)}
+                            className="btn-primary text-xs py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm cursor-pointer"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                          </button>
 
-                        <button 
-                          onClick={() => handleDeleteOrder(ord._id)}
-                          className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors"
-                          title="Delete Order"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                          <button 
+                            onClick={() => handleDeleteOrder(orderKey)}
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                            title="Delete Order"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -501,7 +506,7 @@ export default function AdminPage() {
                     <td className="py-4 px-4 text-right">
                       <button 
                         onClick={() => navigate(`/publish/${p.id}`)}
-                        className="btn-secondary text-xs py-1.5 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 ml-auto flex items-center gap-1 font-bold"
+                        className="btn-secondary text-xs py-1.5 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 ml-auto flex items-center gap-1 font-bold cursor-pointer"
                       >
                         <ExternalLink className="w-3.5 h-3.5" /> View Live
                       </button>
@@ -514,14 +519,14 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* TAB 3: Templates Catalog with Working Add Product & Delete Product */}
+      {/* TAB 3: Templates Catalog with Guaranteed Working Delete & Add Product */}
       {activeTab === 'templates' && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500">Manage Product Catalog & Pricing</span>
             <button 
               onClick={() => setShowAddProductModal(true)}
-              className="btn-primary text-xs py-1.5 px-3.5 bg-pink-600 hover:bg-pink-700 text-white font-bold flex items-center gap-1 shadow-sm"
+              className="btn-primary text-xs py-1.5 px-3.5 bg-pink-600 hover:bg-pink-700 text-white font-bold flex items-center gap-1 shadow-sm cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" /> Add New Product
             </button>
@@ -540,43 +545,46 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {templatesList.map((t) => (
-                  <tr key={t._id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
-                        <img src={t.image} alt={t.title} className="w-full h-full object-cover" />
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 font-bold text-slate-900">{t.title}</td>
-                    <td className="py-4 px-4 font-black text-purple-700">{t.price}</td>
-                    <td className="py-4 px-4">
-                      <span className="text-[10px] font-extrabold bg-pink-100 text-pink-800 px-2.5 py-0.5 rounded-full">
-                        {t.discount}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
-                        {t.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => navigate(`/products/${t._id}`)}
-                        className="btn-secondary text-xs py-1.5 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 font-bold flex items-center gap-1"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" /> Details
-                      </button>
+                {templatesList.map((t, idx) => {
+                  const prodKey = t._id || t.id || `prod-${idx}`;
+                  return (
+                    <tr key={prodKey} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                          <img src={t.image} alt={t.title} className="w-full h-full object-cover" />
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 font-bold text-slate-900">{t.title}</td>
+                      <td className="py-4 px-4 font-black text-purple-700">{t.price}</td>
+                      <td className="py-4 px-4">
+                        <span className="text-[10px] font-extrabold bg-pink-100 text-pink-800 px-2.5 py-0.5 rounded-full">
+                          {t.discount}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
+                          {t.status || 'Active'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => navigate(`/products/${prodKey}`)}
+                          className="btn-secondary text-xs py-1.5 px-3 bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> Details
+                        </button>
 
-                      <button 
-                        onClick={() => handleDeleteProduct(t._id)}
-                        className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors"
-                        title="Delete Product"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        <button 
+                          onClick={() => handleDeleteProduct(prodKey)}
+                          className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                          title="Delete Product"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -642,13 +650,13 @@ export default function AdminPage() {
                 <button 
                   type="button" 
                   onClick={() => setShowAddOrderModal(false)}
-                  className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100 text-slate-700"
+                  className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100 text-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="btn-primary py-2 px-5 text-xs font-bold bg-purple-600 text-white"
+                  className="btn-primary py-2 px-5 text-xs font-bold bg-purple-600 text-white cursor-pointer"
                 >
                   Save Order
                 </button>
@@ -728,13 +736,13 @@ export default function AdminPage() {
                 <button 
                   type="button" 
                   onClick={() => setShowAddProductModal(false)}
-                  className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100 text-slate-700"
+                  className="btn-secondary py-2 px-4 text-xs font-bold bg-slate-100 text-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="btn-primary py-2 px-5 text-xs font-bold bg-pink-600 text-white"
+                  className="btn-primary py-2 px-5 text-xs font-bold bg-pink-600 text-white cursor-pointer"
                 >
                   Save Product
                 </button>
