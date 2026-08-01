@@ -6,7 +6,7 @@ const DEFAULT_TEMPLATES = [
   {
     isBundle: true,
     slug: 'cutie-pack-bundle',
-    title: 'Cutie Pack',
+    title: 'Cutie Pack (All 17 Templates)',
     category: 'love',
     badge: 'BUNDLE',
     subtitle: 'Get all 17 templates just for ₹999, lifetime access.',
@@ -14,7 +14,7 @@ const DEFAULT_TEMPLATES = [
     originalPrice: '₹2,583',
     saveBadge: 'SAVE ₹1,584',
     image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
-    description: 'Unlock every premium template. Pay once. Access forever. Includes all future templates released!',
+    description: 'Unlock every current and future premium template. Pay once. Access forever with lifetime hosting and instant WhatsApp support!',
     featured: true,
     active: true
   },
@@ -100,7 +100,7 @@ export default function TemplatesPage() {
       } catch (e) {}
     }
 
-    // 2. Fetch from Vercel Serverless API /api/products (connected to MongoDB Atlas)
+    // 2. Fetch from Vercel Serverless API /api/products
     try {
       let res = await fetch('/api/products?active=true');
       if (!res.ok) res = await fetch('http://localhost:5000/api/products?active=true');
@@ -131,9 +131,15 @@ export default function TemplatesPage() {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
   };
 
-  const filteredProducts = useMemo(() => {
+  // Separate Bundle Product (Cutie Pack) vs Regular Templates
+  const bundleProduct = useMemo(() => {
+    return products.find(p => p.isBundle || p.badge === 'BUNDLE' || p.slug === 'cutie-pack-bundle');
+  }, [products]);
+
+  const regularProducts = useMemo(() => {
     return products.filter(p => {
-      const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory || (p.isBundle && selectedCategory === 'all');
+      if (p.isBundle || p.badge === 'BUNDLE' || p.slug === 'cutie-pack-bundle') return false;
+      const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
       const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesCategory && matchesSearch;
@@ -157,7 +163,7 @@ export default function TemplatesPage() {
             Find the right page and make it yours.
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            Showing {filteredProducts.length} of {products.length} designs
+            Showing {regularProducts.length + (bundleProduct ? 1 : 0)} of {products.length} designs
           </p>
         </div>
 
@@ -247,74 +253,72 @@ export default function TemplatesPage() {
             </div>
           </aside>
 
-          {/* Right Cards Grid Column */}
+          {/* Right Cards Column */}
           <main className="lg:col-span-9 space-y-8">
+            
+            {/* 1. TOP PINNED BUNDLE CARD: Cutie Pack (Always Stays at the Very Top) */}
+            {bundleProduct && (
+              <div className="bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border-2 border-purple-500/40 p-5 sm:p-8 rounded-3xl relative overflow-hidden text-left space-y-5 shadow-md group">
+                <div className="flex items-center justify-between">
+                  <span className="bg-purple-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                    <Crown className="w-3 h-3 text-amber-300" /> BUNDLE
+                  </span>
+                  <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
+                    {bundleProduct.discount || bundleProduct.discountBadge || bundleProduct.saveBadge || 'SAVE ₹1,584'}
+                  </span>
+                </div>
+
+                <div 
+                  className="relative h-56 sm:h-64 rounded-2xl overflow-hidden border border-slate-200 shadow-md cursor-pointer" 
+                  onClick={() => navigate(`/products/${bundleProduct.slug}`)}
+                >
+                  <img 
+                    src={bundleProduct.image} 
+                    alt={bundleProduct.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex items-end p-4">
+                    <div className="text-white text-xs font-bold">
+                      💖 Every Premium Template Yours Forever • Pay Once • Lifetime Access
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-['Outfit']">{bundleProduct.title}</h3>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium">{bundleProduct.description}</p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-slate-900 font-['Outfit']">{bundleProduct.price}</span>
+                    {bundleProduct.originalPrice && <span className="text-xs text-slate-500 line-through font-semibold">{bundleProduct.originalPrice}</span>}
+                    <span className="text-[10px] text-pink-600 font-bold uppercase tracking-wider">ONE-TIME</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => navigate(`/products/${bundleProduct.slug}`)}
+                      className="btn-secondary text-xs py-2.5 px-4 bg-white border-slate-300 text-slate-800 hover:bg-slate-50 font-bold cursor-pointer"
+                    >
+                      See details
+                    </button>
+                    <button 
+                      onClick={() => handleBuyOnWhatsApp(bundleProduct.title, bundleProduct.price)}
+                      className="btn-primary text-xs py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" /> Buy on WhatsApp
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. REGULAR TEMPLATES GRID (All Other Products Go Under Cutie Pack) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {filteredProducts.map((item, idx) => {
+              {regularProducts.map((item, idx) => {
                 const itemSlug = item.slug || item._id || `template-${idx}`;
                 
-                // FEATURED BUNDLE CARD
-                if (item.isBundle || item.badge === 'BUNDLE') {
-                  return (
-                    <div 
-                      key={itemSlug}
-                      className="md:col-span-2 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border-2 border-purple-500/40 p-5 sm:p-8 rounded-3xl relative overflow-hidden text-left space-y-5 shadow-sm group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="bg-purple-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                          <Crown className="w-3 h-3 text-amber-300" /> BUNDLE
-                        </span>
-                        <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
-                          {item.discount || item.discountBadge || item.saveBadge || 'SAVE ₹1,584'}
-                        </span>
-                      </div>
-
-                      <div className="relative h-56 sm:h-60 rounded-2xl overflow-hidden border border-slate-200 shadow-md cursor-pointer" onClick={() => navigate(`/products/${itemSlug}`)}>
-                        <img 
-                          src={item.image} 
-                          alt={item.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex items-end p-4">
-                          <div className="text-white text-xs font-bold">
-                            💖 Every Premium Template Yours Forever • Pay Once • Lifetime Access
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h3 className="text-2xl font-extrabold text-slate-900 font-['Outfit']">{item.title}</h3>
-                        <p className="text-xs sm:text-sm text-slate-600">{item.description}</p>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-black text-slate-900 font-['Outfit']">{item.price}</span>
-                          {item.originalPrice && <span className="text-xs text-slate-500 line-through">{item.originalPrice}</span>}
-                          <span className="text-[10px] text-pink-600 font-bold uppercase tracking-wider">ONE-TIME</span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <button 
-                            onClick={() => navigate(`/products/${itemSlug}`)}
-                            className="btn-secondary text-xs py-2.5 px-4 bg-white border-slate-300 text-slate-800 hover:bg-slate-50 font-bold cursor-pointer"
-                          >
-                            See details
-                          </button>
-                          <button 
-                            onClick={() => handleBuyOnWhatsApp(item.title, item.price)}
-                            className="btn-primary text-xs py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" /> Buy on WhatsApp
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                // REGULAR TEMPLATE CARD
                 return (
                   <div 
                     key={itemSlug}
@@ -381,8 +385,8 @@ export default function TemplatesPage() {
                   </div>
                 );
               })}
-
             </div>
+
           </main>
 
         </div>
