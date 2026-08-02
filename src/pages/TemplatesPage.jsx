@@ -1,7 +1,50 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Star, Crown, MessageCircle } from 'lucide-react';
+import { Search, Star, Crown, MessageCircle, Sparkles } from 'lucide-react';
 import { fetchApi } from '../utils/api';
+
+// Featured Memory Vault Studio Templates
+const DEFAULT_FEATURED_PRODUCTS = [
+  {
+    _id: 'memory-vault-studio-flagship',
+    slug: 'memory-vault-studio',
+    title: "Memory Vault Studio - Dynamic Story Engine",
+    category: "friendship",
+    badge: "NEW FLAGSHIP PRODUCT",
+    discount: "FEATURED 40% OFF",
+    price: "₹499",
+    originalPrice: "₹999",
+    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
+    description: "An interactive Pixar & Apple style story engine where every page, animation, wax seal, keypad physics, sound effect & theme comes dynamically from story.json.",
+    isMemoryVault: true
+  },
+  {
+    _id: 'romantic-love-vault',
+    slug: 'romantic-love-vault',
+    title: "Romantic Love & Proposal Story Vault",
+    category: "love",
+    badge: "POPULAR",
+    discount: "SAVE ₹300",
+    price: "₹399",
+    originalPrice: "₹699",
+    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+    description: "Floating hearts particle background, glowing confession notes, secret photo reveal scratch cards, and romantic background melody.",
+    isMemoryVault: true
+  },
+  {
+    _id: 'birthday-surprise-vault',
+    slug: 'birthday-surprise-vault',
+    title: "Interactive Birthday Celebration Book",
+    category: "birthday",
+    badge: "BESTSELLER",
+    discount: "SAVE ₹250",
+    price: "₹349",
+    originalPrice: "₹599",
+    image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
+    description: "Confetti explosions, pop-open 3D gift box, trivia quiz game, and custom birthday countdown timer.",
+    isMemoryVault: true
+  }
+];
 
 export default function TemplatesPage() {
   const navigate = useNavigate();
@@ -9,17 +52,21 @@ export default function TemplatesPage() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(DEFAULT_FEATURED_PRODUCTS);
 
   useEffect(() => {
     loadProducts();
   }, []);
 
   const loadProducts = async () => {
-    // Fetch directly from production Vercel Serverless MongoDB Atlas API
-    const result = await fetchApi('/api/products');
-    if (result.success && Array.isArray(result.data)) {
-      setProducts(result.data);
+    try {
+      const result = await fetchApi('/api/products');
+      if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+        // Merge API products with our flagship Memory Vault Studio
+        setProducts([...DEFAULT_FEATURED_PRODUCTS, ...result.data]);
+      }
+    } catch (e) {
+      console.warn('Using default featured templates fallback:', e);
     }
   };
 
@@ -38,7 +85,6 @@ export default function TemplatesPage() {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
   };
 
-  // Separate Bundle Product (Cutie Pack) vs Regular Templates
   const bundleProduct = useMemo(() => {
     return products.find(p => p.isBundle || p.badge === 'BUNDLE' || p.slug === 'cutie-pack-bundle');
   }, [products]);
@@ -65,7 +111,7 @@ export default function TemplatesPage() {
         
         {/* Page Title & Header */}
         <div className="text-left space-y-1.5 mb-6 sm:mb-8 border-b border-slate-200 pb-5">
-          <span className="text-xs font-bold text-pink-600 tracking-widest uppercase">TEMPLATES</span>
+          <span className="text-xs font-bold text-pink-600 tracking-widest uppercase">TEMPLATES & PRODUCTS</span>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight">
             Find the right page and make it yours.
           </h1>
@@ -229,9 +275,18 @@ export default function TemplatesPage() {
                 return (
                   <div 
                     key={itemSlug}
-                    className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col justify-between text-left group shadow-sm hover:border-purple-400 hover:shadow-md transition-all"
+                    className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col justify-between text-left group shadow-sm hover:border-purple-400 hover:shadow-md transition-all relative"
                   >
-                    <div className="relative h-52 sm:h-56 overflow-hidden bg-slate-100 cursor-pointer" onClick={() => navigate(`/products/${itemSlug}`)}>
+                    {item.isMemoryVault && (
+                      <div className="absolute top-3 right-3 bg-amber-400 text-slate-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-slate-900" /> DYNAMIC ENGINE
+                      </div>
+                    )}
+
+                    <div 
+                      className="relative h-52 sm:h-56 overflow-hidden bg-slate-100 cursor-pointer" 
+                      onClick={() => navigate(item.isMemoryVault ? '/memory-vault' : `/products/${itemSlug}`)}
+                    >
                       <img 
                         src={item.image} 
                         alt={item.title} 
@@ -247,7 +302,7 @@ export default function TemplatesPage() {
                     <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
                         <h3 
-                          onClick={() => navigate(`/products/${itemSlug}`)}
+                          onClick={() => navigate(item.isMemoryVault ? '/memory-vault' : `/products/${itemSlug}`)}
                           className="text-lg sm:text-xl font-bold text-slate-900 font-['Outfit'] group-hover:text-purple-600 transition-colors cursor-pointer"
                         >
                           {item.title}
@@ -263,7 +318,7 @@ export default function TemplatesPage() {
                             ))}
                           </div>
                           <span className="text-xs font-bold text-slate-900">5.0</span>
-                          <span className="text-xs text-slate-500">(Verified)</span>
+                          <span className="text-xs text-slate-500">(Verified Studio)</span>
                         </div>
                       </div>
 
@@ -274,10 +329,10 @@ export default function TemplatesPage() {
 
                         <div className="flex items-center gap-2">
                           <button 
-                            onClick={() => navigate(`/products/${itemSlug}`)}
-                            className="btn-secondary text-xs py-2 px-3 bg-white border-slate-300 text-slate-800 hover:bg-slate-50 font-bold cursor-pointer"
+                            onClick={() => navigate(item.isMemoryVault ? '/memory-vault' : `/products/${itemSlug}`)}
+                            className="btn-secondary text-xs py-2 px-3 bg-purple-50 border-purple-300 text-purple-900 hover:bg-purple-100 font-bold cursor-pointer"
                           >
-                            Take a look
+                            Launch Engine 🚀
                           </button>
                           <button 
                             onClick={() => handleBuyOnWhatsApp(item.title, item.price)}

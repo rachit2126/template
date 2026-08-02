@@ -2,12 +2,12 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
-// Components & Layouts
+// Existing Website Layout Components
 import AnnouncementBanner from './components/AnnouncementBanner';
 import FloatingNavbar from './components/FloatingNavbar';
 import FooterNav from './components/FooterNav';
 
-// Pages
+// Existing Website Pages (No Changes)
 import HomePage from './pages/HomePage';
 import TemplatesPage from './pages/TemplatesPage';
 import TemplateDetailPage from './pages/TemplateDetailPage';
@@ -27,15 +27,21 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
 
-// Animated Route Wrapper
+// Memory Vault Independent Module
+import MemoryVaultApp from './modules/memory-vault/MemoryVaultApp';
+import MemoryVaultAdmin from './modules/memory-vault/editor/MemoryVaultAdmin';
+import StoryViewer from './modules/memory-vault/pages/StoryViewer';
+import StoryEditor from './modules/memory-vault/editor/StoryEditor';
+
 function AnimatedRoutes() {
   const location = useLocation();
 
-  // Standalone routes without landing header/footer
   const isStandalone = location.pathname.startsWith('/editor') || 
                        location.pathname.startsWith('/preview') || 
                        location.pathname.startsWith('/publish') ||
-                       location.pathname.startsWith('/admin');
+                       location.pathname.startsWith('/admin') ||
+                       location.pathname.startsWith('/memory-vault') ||
+                       location.pathname.startsWith('/story');
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#F8F9FE] text-slate-900 selection:bg-pink-500 selection:text-white font-['Plus_Jakarta_Sans']">
@@ -56,21 +62,20 @@ function AnimatedRoutes() {
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
             <Routes location={location}>
+              {/* Existing Website Routes (Untouched) */}
               <Route path="/" element={<HomePage />} />
-              
-              {/* Templates & Products Catalog */}
+              <Route path="/home" element={<HomePage />} />
               <Route path="/templates" element={<TemplatesPage />} />
               <Route path="/templates/:slug" element={<TemplateDetailPage />} />
               <Route path="/products" element={<TemplatesPage />} />
               <Route path="/products/:slug" element={<TemplateDetailPage />} />
 
-              {/* Admin Panel */}
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/admin/dashboard" element={<AdminPage />} />
 
               <Route path="/features" element={<FeaturesPage />} />
-              <Route path="/editor" element={<EditorPage />} />
-              <Route path="/editor/:projectId" element={<EditorPage />} />
+              <Route path="/editor" element={<StoryEditor />} />
+              <Route path="/editor/:id" element={<StoryEditor />} />
               <Route path="/preview/:slug" element={<PreviewPage />} />
               <Route path="/publish/:slug" element={<PublishPage />} />
               <Route path="/pricing" element={<PricingPage />} />
@@ -83,6 +88,15 @@ function AnimatedRoutes() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+
+              {/* Memory Vault Modular Product Routes */}
+              <Route path="/memory-vault/*" element={<MemoryVaultApp />} />
+              <Route path="/memory-vault/editor" element={<MemoryVaultApp initialAdminOpen={true} />} />
+              <Route path="/memory-vault/editor/:id" element={<MemoryVaultApp initialAdminOpen={true} />} />
+              <Route path="/admin/memory-vault/*" element={<MemoryVaultAdmin />} />
+              <Route path="/story/:id" element={<StoryViewer />} />
+              <Route path="/editor/:id" element={<StoryEditor />} />
+
               <Route path="*" element={<HomePage />} />
             </Routes>
           </motion.div>

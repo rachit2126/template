@@ -1,0 +1,383 @@
+/* Memory Vault Studio - Handcrafted Scrapbook & Cinematic CSS Module */
+
+.viewport {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: background 0.6s ease;
+}
+
+/* Background Paper & Grid Textures */
+.paperTexture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  opacity: 0.8;
+  z-index: 1;
+}
+
+/* Dynamic Page Container */
+.pageContainer {
+  position: relative;
+  z-index: 5;
+  width: 90%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Header & Navigation Bar */
+.headerBar {
+  position: fixed;
+  top: 15px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+}
+
+.brandBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 2px solid #2C1A0E;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iconBtn {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 2px solid #2C1A0E;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.iconBtn:hover {
+  transform: scale(1.1);
+}
+
+/* Scrapbook Decorative Polaroid Side Stickers */
+.scrapPolaroid {
+  position: absolute;
+  background: #ffffff;
+  padding: 8px 8px 16px 8px;
+  border: 2px solid #2C1A0E;
+  border-radius: 4px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  width: 110px;
+  text-align: center;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.scrapPolaroid:hover {
+  transform: scale(1.05) rotate(0deg) !important;
+  z-index: 10;
+}
+
+.polaroidPhotoArea {
+  background: #f0f0f0;
+  height: 80px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.polaroidPhotoArea img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.polaroidCaption {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 6px 0 0 0;
+  color: #2C1A0E;
+}
+
+/* Washi Tape Strip */
+.washiTape {
+  position: absolute;
+  height: 22px;
+  width: 65px;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  background: rgba(248, 212, 142, 0.85);
+  border-left: 2px dashed rgba(0, 0, 0, 0.15);
+  border-right: 2px dashed rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  z-index: 12;
+}
+
+/* Action Buttons with Sketchy Border */
+.sketchyBtn {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: #A2D2A9;
+  color: #2C1A0E;
+  border: 2px solid #2C1A0E;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #2C1A0E;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sketchyBtn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #2C1A0E;
+}
+
+.sketchyBtn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #2C1A0E;
+}
+
+/* Vault Keypad Box */
+.vaultCard {
+  position: relative;
+  background: #ffffff;
+  border: 2.5px solid #2C1A0E;
+  border-radius: 18px;
+  padding: 24px 20px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.keypadDisplay {
+  background: #E8DED0;
+  border: 2px solid #2C1A0E;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 1.6rem;
+  margin-bottom: 14px;
+}
+
+.keypadGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.numBtn {
+  padding: 10px;
+  font-size: 1.15rem;
+  font-weight: bold;
+  border: 2px solid #2C1A0E;
+  background: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #2C1A0E;
+  transition: all 0.1s ease;
+  box-sizing: border-box;
+}
+
+.numBtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #2C1A0E;
+}
+
+/* Envelope Container */
+.envelopeOuter {
+  position: relative;
+  width: 340px;
+  height: 230px;
+  margin-bottom: 25px;
+}
+
+.scrollRoll {
+  position: absolute;
+  top: 10px;
+  left: 8%;
+  width: 84%;
+  height: 60px;
+  background: #FBF4DB;
+  border: 2px solid #2C1A0E;
+  border-radius: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  z-index: 3;
+}
+
+.ribbonBand {
+  background: #4A6FA5;
+  color: #ffffff;
+  padding: 4px 14px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.envelopeBody {
+  position: absolute;
+  inset: 0;
+  background: #F3E5BE;
+  border: 3px solid #2C1A0E;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+}
+
+.waxSeal {
+  width: 54px;
+  height: 54px;
+  background: radial-gradient(circle, #B83232, #7A1C1C);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFD700;
+  font-size: 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  z-index: 10;
+  margin-top: 12px;
+  border: 2px solid #521212;
+}
+
+/* Scroll Letter Paper */
+.scrollPaper {
+  background: #FCF6E8;
+  border: 2px solid #2C1A0E;
+  border-radius: 12px;
+  width: 100%;
+  padding: 22px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  position: relative;
+  box-sizing: border-box;
+}
+
+.scrollPaper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 20px;
+  border-left: 2px dashed rgba(212, 184, 134, 0.6);
+}
+
+/* Choice Cards Grid */
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.choiceCard {
+  background: #ffffff;
+  border: 2.5px solid #2C1A0E;
+  border-radius: 14px;
+  padding: 18px 12px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.choiceCard:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+/* Vintage Vinyl Player */
+.vinylDisc {
+  width: 170px;
+  height: 170px;
+  background: radial-gradient(circle, #111 30%, #333 31%, #111 60%, #222 61%, #111 100%);
+  border-radius: 50%;
+  border: 4px solid #000;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.vinylLabel {
+  width: 55px;
+  height: 55px;
+  background: #F8D48E;
+  border-radius: 50%;
+  border: 2px solid #2C1A0E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+/* Footer Styling */
+.footerBar {
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.75;
+  z-index: 10;
+  letter-spacing: 1px;
+}

@@ -1,0 +1,302 @@
+{
+  "meta": {
+    "title": "FRIENDSHIP VAULT '24",
+    "subtitle": "An Interactive Pixar/Apple Style Memory Experience",
+    "author": "Rachit",
+    "created": "2026-08-02",
+    "version": "1.0.0"
+  },
+  "theme": "friendship",
+  "pin": "1234",
+  "variables": {
+    "receiverName": "Ananya",
+    "senderName": "Rachit",
+    "year": "2026",
+    "tripLocation": "Goa Road Trip '22",
+    "insideJoke": "The Pancake Incident",
+    "favSong": "Best Friend Forever"
+  },
+  "settings": {
+    "soundEnabled": true,
+    "bgMusicEnabled": true,
+    "bgMusicUrl": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-acoustic-ambient-111154.mp3",
+    "particles": "sparkles",
+    "autoAdvance": false
+  },
+  "pages": [
+    {
+      "id": "page-vault",
+      "type": "vault",
+      "title": "ACCESSING OUR VAULT",
+      "subtitle": "ENTER YOUR SECRET PIN (4 DIGITS)",
+      "hint": "Default PIN is 1234",
+      "next": "page-envelope"
+    },
+    {
+      "id": "page-envelope",
+      "type": "envelope",
+      "ribbonText": "A Message From {{senderName}}",
+      "recipient": "TO: {{receiverName}}",
+      "subtext": "Your special friend's message is inside!\nClick the wax seal to break and open.",
+      "buttonText": "UNROLL MESSAGE →",
+      "next": "page-letter"
+    },
+    {
+      "id": "page-letter",
+      "type": "letter",
+      "title": "HAPPY FRIENDSHIP DAY {{receiverName}}!",
+      "section1Title": "THE STORY OF US",
+      "section1Text": "Dear {{receiverName}},\nFrom that unforgettable {{tripLocation}} to our endless inside jokes like \"{{insideJoke}}\". Thank you for being my rock in {{year}}. Here's to a lifetime of memories!",
+      "section2Title": "OUR UNFORGETTABLE MOMENTS",
+      "bulletPoints": [
+        "{{tripLocation}} (Checked!)",
+        "{{insideJoke}} (Classic Legend)",
+        "Secret Handshake Level 100",
+        "Late Night 3 AM Phone Calls"
+      ],
+      "buttonText": "EXPLORE MEMORY GALLERY →",
+      "next": "page-gallery"
+    },
+    {
+      "id": "page-gallery",
+      "type": "gallery",
+      "title": "MEMORIES FROZEN IN TIME",
+      "subtitle": "Click any polaroid to zoom into the memory",
+      "images": [
+        {
+          "id": "img1",
+          "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
+          "caption": "Warm Hugs '22",
+          "rotation": -4
+        },
+        {
+          "id": "img2",
+          "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+          "caption": "The Best Laughs",
+          "rotation": 6
+        },
+        {
+          "id": "img3",
+          "url": "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80",
+          "caption": "Late Night Hangouts",
+          "rotation": -2
+        }
+      ],
+      "buttonText": "CHOOSE A SURPRISE →",
+      "next": "page-choices"
+    },
+    {
+      "id": "page-choices",
+      "type": "question-cards",
+      "title": "THESE ARE FOR YOU, {{receiverName}}!",
+      "subtitle": "Choose one to unlock its secret memory",
+      "choices": [
+        {
+          "id": "c1",
+          "label": "1. VINTAGE CAMERA",
+          "icon": "📷",
+          "description": "Capture the magic frame",
+          "targetPage": "page-memory-1"
+        },
+        {
+          "id": "c2",
+          "label": "2. LETTER IN A BOTTLE",
+          "icon": "🍾",
+          "description": "Ocean waves secret message",
+          "targetPage": "page-bottle"
+        },
+        {
+          "id": "c3",
+          "label": "3. MYSTERY TREASURE",
+          "icon": "💎",
+          "description": "Unlock the golden chest",
+          "targetPage": "page-treasure"
+        }
+      ]
+    },
+    {
+      "id": "page-memory-1",
+      "type": "memory-card",
+      "title": "THE REAL {{receiverName}}",
+      "subtitle": "- Unfiltered, Pure & Beautiful -",
+      "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+      "buttonText": "TRY THE SCRATCH CARD →",
+      "next": "page-scratch"
+    },
+    {
+      "id": "page-scratch",
+      "type": "scratch",
+      "title": "SCRATCH TO REVEAL SECRET NOTE",
+      "subtitle": "Use your mouse or finger to scratch off the silver layer!",
+      "hiddenImage": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+      "hiddenText": "YOU ARE UNSTOPPABLE, {{receiverName}}! 🌟",
+      "buttonText": "TEST YOUR KNOWLEDGE (QUIZ) →",
+      "next": "page-quiz"
+    },
+    {
+      "id": "page-quiz",
+      "type": "quiz",
+      "title": "HOW WELL DO YOU KNOW US?",
+      "questions": [
+        {
+          "id": "q1",
+          "question": "What is our absolute favorite inside joke?",
+          "options": [
+            "{{insideJoke}}",
+            "The Midnight Pizza Run",
+            "The Lost Keys Drama",
+            "Wrong Train Incident"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "id": "q2",
+          "question": "Where was our legendary trip taken?",
+          "options": [
+            "Paris",
+            "{{tripLocation}}",
+            "New York",
+            "Maldives"
+          ],
+          "correctIndex": 1
+        }
+      ],
+      "buttonText": "OPEN TREASURE CHEST →",
+      "next": "page-treasure"
+    },
+    {
+      "id": "page-treasure",
+      "type": "treasure",
+      "title": "THE GOLDEN TREASURE CHEST",
+      "subtitle": "Drag the key onto the lock or click to unlock!",
+      "secretReward": "🏆 WORLD'S BEST FRIEND AWARD {{year}}",
+      "buttonText": "PLAY MUSIC BOX →",
+      "next": "page-music"
+    },
+    {
+      "id": "page-music",
+      "type": "music",
+      "title": "VINTAGE VINYL PLAYER",
+      "subtitle": "Spinning our theme song: {{favSong}}",
+      "tracks": [
+        {
+          "title": "{{favSong}}",
+          "artist": "Special Soundtrack",
+          "url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-acoustic-ambient-111154.mp3"
+        },
+        {
+          "title": "Acoustic Memories",
+          "artist": "Acoustic Chill",
+          "url": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a81665.mp3?filename=acoustic-guitars-ambient-10651.mp3"
+        }
+      ],
+      "buttonText": "UNBOX GIFT BOX →",
+      "next": "page-gift"
+    },
+    {
+      "id": "page-gift",
+      "type": "gift",
+      "title": "A SPECIAL GIFT FOR {{receiverName}}",
+      "subtitle": "Click to untie ribbon and pop the lid!",
+      "giftTitle": "🎉 LIFETIME MEMBERSHIP TO OUR FRIENDSHIP CLUB!",
+      "giftDescription": "Valid forever across all universes. Unlimited hugs, coffee sessions, and late-night calls included.",
+      "buttonText": "VIEW OUR TIMELINE →",
+      "next": "page-timeline"
+    },
+    {
+      "id": "page-timeline",
+      "type": "timeline",
+      "title": "OUR MILESTONE JOURNEY",
+      "events": [
+        {
+          "year": "2021",
+          "title": "First Meeting",
+          "desc": "The day two crazy minds collided!"
+        },
+        {
+          "year": "2022",
+          "title": "{{tripLocation}}",
+          "desc": "Non-stop laughing, road tunes, and epic sunsets."
+        },
+        {
+          "year": "2024",
+          "title": "Mastering the Handshake",
+          "desc": "Level 100 synchronized secret handshake unlocked."
+        },
+        {
+          "year": "{{year}}",
+          "title": "Friendship Vault Launch",
+          "desc": "Preserving all our cherished moments in this dynamic studio."
+        }
+      ],
+      "buttonText": "OPEN BOTTLE LETTER →",
+      "next": "page-bottle"
+    },
+    {
+      "id": "page-bottle",
+      "type": "bottle",
+      "title": "LETTER IN A BOTTLE",
+      "subtitle": "Floating across oceans of time...",
+      "letterMessage": "Dear {{receiverName}},\nNo matter how far life takes us, this bottle will always float back to remind you that you have a best friend in {{senderName}}.",
+      "buttonText": "TYE FRIENDSHIP BAND →",
+      "next": "page-band"
+    },
+    {
+      "id": "page-band",
+      "type": "band-tying",
+      "title": "THE KNOT OF FRIENDSHIP",
+      "subtitle": "Drag the elastic band to complete the knot!",
+      "knotText": "FOREVER BOUND IN TRUST & LOVE",
+      "buttonText": "TRY THE PHOTO PUZZLE →",
+      "next": "page-puzzle"
+    },
+    {
+      "id": "page-puzzle",
+      "type": "puzzle",
+      "title": "MEMORY PUZZLE GAME",
+      "subtitle": "Solve the sliding photo puzzle pieces to reveal our memory!",
+      "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80",
+      "buttonText": "REVEAL SECRET CONFESSION →",
+      "next": "page-confession"
+    },
+    {
+      "id": "page-confession",
+      "type": "confession",
+      "title": "SECRET CONFESSION NOTE",
+      "subtitle": "Press & hold the wax heart to reveal the hidden glowing text...",
+      "confessionText": "You are the truest, kindest, and most hilarious person I know. Thank you for making world a brighter place everyday, {{receiverName}}!",
+      "buttonText": "COUNTDOWN TO NEXT REUNION →",
+      "next": "page-countdown"
+    },
+    {
+      "id": "page-countdown",
+      "type": "countdown",
+      "title": "COUNTDOWN TO OUR NEXT REUNION",
+      "targetDate": "2026-12-31T00:00:00",
+      "subtext": "Counting down every second until we hang out again!",
+      "buttonText": "POLAROID WALL →",
+      "next": "page-polaroid-wall"
+    },
+    {
+      "id": "page-polaroid-wall",
+      "type": "polaroid-wall",
+      "title": "OUR POLAROID PINBOARD",
+      "subtitle": "Drag photos around the corkboard",
+      "photos": [
+        { "id": "p1", "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80", "label": "Bestie Hugs", "x": 10, "y": 10, "rot": -5 },
+        { "id": "p2", "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "label": "Crazy Smiles", "x": 35, "y": 15, "rot": 8 },
+        { "id": "p3", "url": "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=400&q=80", "label": "Road Trip '22", "x": 65, "y": 12, "rot": -3 }
+      ],
+      "buttonText": "GO TO FINALE PAGE →",
+      "next": "page-ending"
+    },
+    {
+      "id": "page-ending",
+      "type": "ending",
+      "title": "THANK YOU FOR BEING YOU ❤️",
+      "message": "This Friendship Vault was crafted with love by {{senderName}} for {{receiverName}}.",
+      "subtext": "You can replay this experience anytime or export the story JSON to share with others.",
+      "buttonText": "REPLAY STORY ↻"
+    }
+  ]
+}

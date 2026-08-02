@@ -52,7 +52,6 @@ export default function GalleryPage({ config, onNavigate }) {
         {config.buttonText || 'CONTINUE STORY →'}
       </button>
 
-      {/* Lightbox Modal */}
       <AnimatePresence>
         {selectedPhoto && (
           <motion.div
