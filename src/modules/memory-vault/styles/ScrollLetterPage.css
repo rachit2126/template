@@ -1,0 +1,425 @@
+/* Premium Scrapbook LetterStoryPage Styles - Exact Match to Target Screenshot */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@600;700&family=Patrick+Hand&display=swap');
+
+:root {
+  --font-heading: 'Fredoka', cursive, sans-serif;
+  --font-handwriting: 'Caveat', cursive, sans-serif;
+  --font-body: 'Patrick Hand', cursive, sans-serif;
+  --bg-cream: #FAF6EE;
+  --stroke-dark: #2C2523;
+  --scroll-paper: #FFF7E6;
+  --green-btn: #83C5BE;
+  --green-btn-hover: #6FB3AC;
+}
+
+/* Base Layout Container */
+.mv-letter-page {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--bg-cream);
+  font-family: var(--font-body);
+  color: var(--stroke-dark);
+  user-select: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 16px) + 12px) 16px calc(env(safe-area-inset-bottom, 16px) + 20px) 16px;
+}
+
+/* Inside Studio Canvas Bounds Enforcement */
+.mv-letter-page.inside-studio-canvas {
+  min-height: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  padding: 16px !important;
+  overflow-y: auto !important;
+}
+
+/* 8-Layered Scrapbook Background */
+.mv-bg-layer-1 { position: fixed; inset: 0; background-color: var(--bg-cream); z-index: 0; }
+.mv-bg-layer-2 { position: fixed; inset: 0; background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.65) 0%, transparent 75%); z-index: 0; }
+.mv-bg-layer-3 {
+  position: fixed;
+  inset: 0;
+  opacity: 0.35;
+  pointer-events: none;
+  background-image: radial-gradient(var(--stroke-dark) 0.8px, transparent 0.8px);
+  background-size: 22px 22px;
+  z-index: 0;
+}
+.mv-bg-layer-4 {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mv-bg-layer-8 {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 100px rgba(160, 130, 90, 0.18);
+  z-index: 1;
+}
+
+.mv-bg-layer-1.inside-studio-canvas,
+.mv-bg-layer-2.inside-studio-canvas,
+.mv-bg-layer-3.inside-studio-canvas,
+.mv-bg-layer-4.inside-studio-canvas,
+.mv-bg-layer-8.inside-studio-canvas {
+  position: absolute !important;
+}
+
+/* Doodle Floating Particles */
+.doodle-particle {
+  position: absolute;
+  display: inline-block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.d-p1 { top: 7%; left: 16%; font-size: 1.4rem; }
+.d-p2 { top: 9%; right: 18%; font-size: 1.5rem; }
+.d-p3 { top: 48%; left: 18%; font-size: 1.4rem; }
+.d-p4 { top: 46%; right: 17%; font-size: 1.5rem; }
+.d-p5 { bottom: 18%; left: 16%; font-size: 1.3rem; }
+.d-p6 { bottom: 15%; right: 16%; font-size: 1.4rem; }
+
+/* Navigation Badge Header (Top Left) */
+.mv-badge {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  z-index: 30;
+  background: #FFF;
+  border: 2.5px solid var(--stroke-dark);
+  padding: 6px 14px;
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--stroke-dark);
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Header Section */
+.mv-header {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding-top: 16px;
+  margin-bottom: 8px;
+}
+
+.mv-title-box {
+  position: relative;
+  display: inline-block;
+}
+
+.mv-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 4.8vw, 3.4rem);
+  color: #386188;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0;
+  text-shadow: 2.5px 2.5px 0px #FFF, 4.5px 4.5px 0px rgba(0,0,0,0.06);
+  -webkit-text-stroke: 1.8px var(--stroke-dark);
+}
+
+/* Floating Confetti Doodles */
+.mv-confetti {
+  position: absolute;
+  pointer-events: none;
+  font-size: 1.4rem;
+}
+
+.mv-c-left { top: -8px; left: -38px; }
+.mv-c-right { top: -6px; right: -38px; }
+
+/* Main Center Viewport */
+.mv-scroll-viewport {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.mv-scroll-wrapper {
+  position: relative;
+  width: min(90vw, 560px);
+  padding: 0 18px;
+  box-sizing: border-box;
+}
+
+/* Premium Parchment Scroll Frame */
+.mv-scroll-frame {
+  position: relative;
+  background: var(--scroll-paper);
+  border-top: 3.5px solid var(--stroke-dark);
+  border-bottom: 3.5px solid var(--stroke-dark);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+  padding: 26px 24px 22px 24px;
+  transform-origin: top center;
+  box-sizing: border-box;
+}
+
+/* Jagged Ripped Bottom Edge Effect */
+.mv-scroll-frame::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: -2px;
+  right: -2px;
+  height: 10px;
+  background: linear-gradient(135deg, var(--scroll-paper) 50%, transparent 50%),
+              linear-gradient(225deg, var(--scroll-paper) 50%, transparent 50%);
+  background-size: 14px 14px;
+  background-repeat: repeat-x;
+}
+
+/* Wooden Handles with Caps */
+.mv-handle {
+  position: absolute;
+  top: -18px;
+  bottom: -18px;
+  width: 20px;
+  background: #C68B59;
+  border: 3px solid var(--stroke-dark);
+  border-radius: 10px;
+  z-index: 6;
+  box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.4);
+}
+
+.mv-handle-l { left: -2px; }
+.mv-handle-r { right: -2px; }
+
+.mv-knob-top,
+.mv-knob-bottom {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 14px;
+  background: #965A2C;
+  border: 2.5px solid var(--stroke-dark);
+  border-radius: 6px;
+}
+
+.mv-knob-top { top: -12px; }
+.mv-knob-bottom { bottom: -12px; }
+
+.mv-tape-strip {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 14px;
+  background: rgba(255, 183, 3, 0.8);
+  border-left: 2px dashed rgba(0,0,0,0.15);
+  border-right: 2px dashed rgba(0,0,0,0.15);
+  z-index: 10;
+}
+
+/* Scroll Content Sections */
+.mv-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 18px;
+  align-items: flex-start;
+}
+
+.mv-icon-box {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  background: #FFD2D7;
+  border: 2.5px solid var(--stroke-dark);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 3px 3px 0 var(--stroke-dark);
+}
+
+.mv-section-body h3 {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  margin: 0 0 4px 0;
+  color: var(--stroke-dark);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.mv-section-body p {
+  font-size: 1.05rem;
+  margin: 0;
+  line-height: 1.35;
+  color: #4A403A;
+  font-style: italic;
+}
+
+/* Moments List */
+.mv-moments-list {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0 0;
+}
+
+.mv-moments-list li {
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--stroke-dark);
+}
+
+.mv-checkbox {
+  width: 18px;
+  height: 18px;
+  background: #E8F5E9;
+  border: 2px solid var(--stroke-dark);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #1b4332;
+  box-shadow: 1px 1px 0 var(--stroke-dark);
+}
+
+/* Scroll Mini Gallery Grid */
+.mv-mini-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 2.5px dashed #D3C3AD;
+}
+
+/* External Corner Polaroids & Sticky Notes */
+.mv-decor-polaroid {
+  position: absolute;
+  z-index: 4;
+  background: #FFF;
+  border: 3px solid var(--stroke-dark);
+  padding: 8px 8px 18px 8px;
+  border-radius: 6px;
+  box-shadow: 6px 12px 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mv-decor-polaroid img {
+  width: 135px;
+  height: 135px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.mv-decor-polaroid .caption {
+  font-family: var(--font-handwriting);
+  font-size: 1.15rem;
+  text-align: center;
+  margin-top: 5px;
+  font-weight: 700;
+  color: var(--stroke-dark);
+}
+
+.mv-pos-tl { top: 25px; left: 35px; transform: rotate(-8deg); }
+.mv-pos-tr { top: 25px; right: 35px; transform: rotate(7deg); }
+.mv-pos-bl { bottom: 45px; left: 40px; transform: rotate(6deg); }
+.mv-pos-br { bottom: 45px; right: 40px; transform: rotate(-6deg); }
+
+.mv-sticky-note {
+  position: absolute;
+  z-index: 3;
+  background: #FFFDF0;
+  border: 2px solid var(--stroke-dark);
+  padding: 10px 14px;
+  border-radius: 4px;
+  box-shadow: 4px 6px 12px rgba(0,0,0,0.08);
+  font-family: var(--font-handwriting);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--stroke-dark);
+}
+
+.mv-note-l1 { top: 48%; left: 20px; transform: rotate(-5deg); }
+.mv-note-l2 { bottom: 18px; left: 160px; transform: rotate(-3deg); }
+.mv-note-r1 { top: 48%; right: 25px; transform: rotate(4deg); }
+
+/* Footer Section */
+.mv-footer {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 32px 6px 32px;
+  box-sizing: border-box;
+}
+
+.mv-footer-text {
+  font-family: var(--font-handwriting);
+  font-size: 1.3rem;
+  color: #6C584C;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+}
+
+.mv-next-btn {
+  background-color: var(--green-btn);
+  color: var(--stroke-dark);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  padding: 10px 24px;
+  border: 3px solid var(--stroke-dark);
+  border-radius: 30px;
+  box-shadow: 0 4px 0 var(--stroke-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.mv-next-btn:hover {
+  background-color: var(--green-btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--stroke-dark);
+}
+
+.mv-next-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--stroke-dark);
+}
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+  .mv-decor-polaroid, .mv-sticky-note { display: none; }
+  .mv-scroll-wrapper { width: 94vw; padding: 0 10px; }
+  .mv-scroll-frame { padding: 20px 16px 16px 16px; }
+  .mv-mini-gallery { grid-template-columns: repeat(2, 1fr); }
+  .mv-badge { top: 12px; left: 12px; font-size: 0.8rem; }
+  .mv-footer-text { font-size: 1.05rem; text-align: left; }
+}

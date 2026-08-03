@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rachit4907_db_user:3Jmy3PRD0an8rAAU@cluster0.4xensun.mongodb.net/cutiepage?retryWrites=true&w=majority';
 
 app.use(cors());
@@ -208,9 +208,10 @@ app.put('/api/orders/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/orders/:id', async (req, res) => {
+app.delete(['/api/orders', '/api/orders/:id'], async (req, res) => {
   try {
-    await Order.findByIdAndDelete(req.params.id);
+    const orderId = req.params.id || req.query.id;
+    await Order.findByIdAndDelete(orderId);
     res.json({ success: true, message: 'Order deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -309,9 +310,9 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-app.put('/api/products/:id', async (req, res) => {
+app.put(['/api/products', '/api/products/:id'], async (req, res) => {
   try {
-    const prodId = req.params.id;
+    const prodId = req.params.id || req.query.id;
     let updateData = { ...req.body, updatedAt: new Date() };
 
     if (updateData.title) {
@@ -329,9 +330,9 @@ app.put('/api/products/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/products/:id', async (req, res) => {
+const deleteProductHandler = async (req, res) => {
   try {
-    const prodId = req.params.id;
+    const prodId = req.params.id || req.query.id || req.body?.id;
     let deleted = null;
 
     if (mongoose.Types.ObjectId.isValid(prodId)) {
@@ -345,7 +346,10 @@ app.delete('/api/products/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-});
+};
+
+app.delete('/api/products', deleteProductHandler);
+app.delete('/api/products/:id', deleteProductHandler);
 
 // PROJECTS API
 app.post('/api/projects', async (req, res) => {

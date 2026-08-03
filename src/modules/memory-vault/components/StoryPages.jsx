@@ -6,6 +6,8 @@ import { useDeviceType } from '../hooks/useDeviceType';
 import MobileVaultPage from './MobileVaultPage';
 import TabletVaultPage from './TabletVaultPage';
 import DesktopVaultPage from './DesktopVaultPage';
+import ScrollLetterPage from './ScrollLetterPage';
+export { ScrollLetterPage };
 
 // Load Google Fonts dynamically for Scrapbook & Comic / Cursive Aesthetic
 if (typeof document !== 'undefined') {
@@ -737,76 +739,7 @@ export const EnvelopePage = ({ config, onNavigate, onElementClick }) => {
   );
 };
 
-// PAGE 3: LETTER PAGE
-export const ScrollLetterPage = ({ config, onNavigate, onElementClick }) => {
-  const handleNext = () => {
-    soundFx.playClick();
-    onNavigate(config.next);
-  };
-
-  return (
-    <motion.div
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 5, width: '100%', maxWidth: '480px' }}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.6 }}
-    >
-      <h1 style={{ fontFamily: "'Impact', sans-serif", fontSize: '2.2rem', color: '#d9534f', marginBottom: '15px', textAlign: 'center' }}>
-        {config.title}
-      </h1>
-
-      <div style={{
-        background: '#fcf6e8',
-        border: '2px solid #2c1a0e',
-        width: '100%',
-        padding: '25px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-        borderRadius: '8px'
-      }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontFamily: "'Impact', sans-serif", fontSize: '1.2rem', marginBottom: '8px', borderBottom: '1.5px dashed #2c1a0e', paddingBottom: '4px' }}>
-            📖 {config.section1Title || 'THE STORY OF US'}
-          </h3>
-          <p style={{ fontFamily: "'Patrick Hand', cursive", fontSize: '1.2rem', lineHeight: '1.4', margin: '5px 0' }}>
-            {config.section1Text}
-          </p>
-        </div>
-
-        {config.bulletPoints && (
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontFamily: "'Impact', sans-serif", fontSize: '1.2rem', marginBottom: '8px', borderBottom: '1.5px dashed #2c1a0e', paddingBottom: '4px' }}>
-              📋 {config.section2Title || 'UNFORGETTABLE MOMENTS'}
-            </h3>
-            <ul style={{ listStyle: 'none', padding: 0, fontFamily: "'Patrick Hand', cursive", fontSize: '1.15rem', margin: '5px 0' }}>
-              {config.bulletPoints.map((item, idx) => (
-                <li key={idx} style={{ marginBottom: '5px' }}>✓ {item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      <button
-        onClick={handleNext}
-        style={{
-          background: '#a2d0a7',
-          border: '2px solid #2c1a0e',
-          borderRadius: '20px',
-          padding: '10px 24px',
-          fontFamily: "'Impact', sans-serif",
-          fontSize: '1rem',
-          letterSpacing: '1px',
-          cursor: 'pointer',
-          boxShadow: '0 4px 0 #2c1a0e',
-          marginTop: '20px'
-        }}
-      >
-        {config.buttonText || 'VIEW GALLERY →'}
-      </button>
-    </motion.div>
-  );
-};
+// PAGE 3: LETTER PAGE (Imported from ScrollLetterPage.jsx)
 
 // PAGE 4: MEMORY GALLERY PAGE
 export const GalleryPage = ({ config, onNavigate, onElementClick }) => {
