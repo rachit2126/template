@@ -1,7 +1,7 @@
 /**
  * Universal Production-ready API Utility for Cutiepage
  * Always fetches fresh data from production Vercel Serverless Functions (/api/...) 
- * with no-store caching headers and 5-second AbortController timeout.
+ * with no-store caching headers and 15-second AbortController timeout.
  */
 
 export const getApiUrl = (endpoint) => {
@@ -9,7 +9,7 @@ export const getApiUrl = (endpoint) => {
   return cleanEndpoint;
 };
 
-export const fetchApi = async (endpoint, options = {}, timeoutMs = 5000) => {
+export const fetchApi = async (endpoint, options = {}, timeoutMs = 15000) => {
   const url = getApiUrl(endpoint);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -49,7 +49,7 @@ export const fetchApi = async (endpoint, options = {}, timeoutMs = 5000) => {
   } catch (error) {
     clearTimeout(timeoutId);
     const isTimeout = error.name === 'AbortError';
-    const errorMsg = isTimeout ? 'Request timeout (5s limit exceeded)' : error.message;
+    const errorMsg = isTimeout ? 'Request timeout (15s limit exceeded - serverless cold start)' : error.message;
     console.warn(`[API Client Catch] ${url} error:`, errorMsg);
     return { success: false, error: errorMsg };
   }
