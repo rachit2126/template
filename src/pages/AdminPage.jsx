@@ -140,14 +140,24 @@ export default function AdminPage() {
     localStorage.removeItem('cutiepage_admin_auth');
   };
 
-  const validateProductForm = (title, desc, price, image) => {
+  const validateProductForm = (title, desc) => {
     const errs = {};
-    if (!title.trim()) errs.title = 'Product title is required';
-    if (!desc.trim()) errs.desc = 'Description is required';
-    if (!price.trim()) errs.price = 'Price is required';
-    if (!image.trim()) errs.image = 'Primary image URL is required';
-    setProdErrors(errs);
-    return Object.keys(errs).length === 0;
+    if (!title || !title.trim()) {
+      errs.title = 'Product title is required';
+      setDrawerActiveTab('general');
+      showToast('❌ Product title is required', 'error');
+      setProdErrors(errs);
+      return false;
+    }
+    if (!desc || !desc.trim()) {
+      errs.desc = 'Description is required';
+      setDrawerActiveTab('general');
+      showToast('❌ Full description is required', 'error');
+      setProdErrors(errs);
+      return false;
+    }
+    setProdErrors({});
+    return true;
   };
 
   const handleOpenAddProduct = () => {
@@ -175,8 +185,8 @@ export default function AdminPage() {
     setProdDiscount(prod.discount || '50% OFF');
     setProdCostPrice(prod.costPrice || '₹40');
     setProdBadge(prod.badge || 'POPULAR');
-    setProdImage(prod.image || '');
-    setProdGallery(Array.isArray(prod.images) && prod.images.length > 0 ? prod.images : [prod.image]);
+    setProdImage(prod.image || 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80');
+    setProdGallery(Array.isArray(prod.images) && prod.images.length > 0 ? prod.images : [prod.image || 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80']);
     setProdStock(prod.stock !== undefined ? prod.stock : 100);
     setProdUnlimitedStock(prod.unlimitedStock !== false);
     setProdLowStockAlert(prod.lowStockAlert || 5);
@@ -261,39 +271,49 @@ export default function AdminPage() {
   };
 
   const handleAddProductSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateProductForm(prodTitle, prodDesc, prodPrice, prodImage)) return;
+    if (e && e.preventDefault) e.preventDefault();
+    if (isSubmittingProd) return;
+
+    // Use current states with smart fallbacks if empty
+    const finalTitle = prodTitle.trim();
+    const finalDesc = prodDesc.trim();
+    const finalPrice = prodPrice.trim() || '₹79';
+    const finalImage = prodImage.trim() || 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80';
+
+    if (!validateProductForm(finalTitle, finalDesc)) return;
 
     setIsSubmittingProd(true);
 
     const newProdPayload = {
-      title: prodTitle.trim(),
+      title: finalTitle,
       slug: prodSlug.trim() || undefined,
-      description: prodDesc.trim(),
-      shortDesc: prodShortDesc.trim(),
-      category: prodCategory,
-      subCategory: prodSubCategory,
-      tags: prodTags.split(',').map(t => t.trim()).filter(Boolean),
-      sku: prodSKU,
-      barcode: prodBarcode,
-      price: prodPrice.trim(),
-      originalPrice: prodOriginalPrice.trim(),
-      discount: prodDiscount.trim(),
-      costPrice: prodCostPrice.trim(),
-      badge: prodBadge.trim(),
-      image: prodImage.trim(),
-      images: prodGallery.filter(Boolean),
-      stock: Number(prodStock),
+      description: finalDesc,
+      shortDesc: prodShortDesc.trim() || finalDesc.slice(0, 80),
+      category: prodCategory || 'birthday',
+      subCategory: prodSubCategory || 'Digital Card',
+      tags: prodTags ? prodTags.split(',').map(t => t.trim()).filter(Boolean) : ['love', 'surprise'],
+      sku: prodSKU || `CP-${Math.floor(1000 + Math.random() * 9000)}`,
+      barcode: prodBarcode || `890${Math.floor(100000000 + Math.random() * 900000000)}`,
+      price: finalPrice,
+      originalPrice: prodOriginalPrice.trim() || '₹419',
+      discount: prodDiscount.trim() || '81% OFF',
+      costPrice: prodCostPrice.trim() || '₹20',
+      badge: prodBadge.trim() || 'POPULAR',
+      image: finalImage,
+      images: prodGallery.filter(Boolean).length > 0 ? prodGallery.filter(Boolean) : [finalImage],
+      stock: Number(prodStock) || 100,
       unlimitedStock: prodUnlimitedStock,
-      lowStockAlert: Number(prodLowStockAlert),
+      lowStockAlert: Number(prodLowStockAlert) || 5,
       featured: prodFeatured,
       active: prodActive,
       attributes: prodAttributes,
       variants: prodVariants,
-      metaTitle: prodMetaTitle,
-      metaDesc: prodMetaDesc,
-      keywords: prodKeywords
+      metaTitle: prodMetaTitle || finalTitle,
+      metaDesc: prodMetaDesc || finalDesc,
+      keywords: prodKeywords || 'gift, memory, cutiepage'
     };
+
+    console.log("Submitting Product Payload:", newProdPayload);
 
     try {
       let result;
@@ -316,11 +336,11 @@ export default function AdminPage() {
         setShowProductDrawer(false);
         resetProductForm();
       } else {
-        showToast(`❌ Error: ${result?.error || 'Server Error'}`, 'error');
+        showToast(`❌ Error saving product: ${result?.error || 'Server Error'}`, 'error');
       }
     } catch (err) {
       console.error("Error saving product", err);
-      showToast(`❌ Exception: ${err.message}`, 'error');
+      showToast(`❌ Save Exception: ${err.message}`, 'error');
     } finally {
       setIsSubmittingProd(false);
     }
